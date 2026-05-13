@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Footer from '../components/Footer.astro';
+import InfoCards from '../components/InfoCards.astro';
+import CalculatorSection from '../components/CalculatorSection.astro';
+---
+
+<Layout title="Fuel Calculator | Northern Territory, Australia" description="Estimate your road trip costs across the NT">
+  <Header />
+  <Hero title="Fuel Calculator" subtitle="Estimate your road trip costs across the NT" badge="Road Trip Planning Tool" />
+  <main>
+    <div class="section-label">Plan smarter</div>
+    <h2 class="section-title">Calculate your <span>fuel costs</span></h2>
+
+    <CalculatorSection />
+
+    <InfoCards />
+  </main>
+  <Footer />
+</Layout>

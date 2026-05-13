@@ -1,0 +1,38 @@
+---
+interface Props {
+  title?: string;
+  subtitle?: string;
+  badge?: string;
+}
+
+const {
+  title = 'Fuel Calculator',
+  subtitle = 'Estimate your road trip costs across the NT',
+  badge = 'Road Trip Planning Tool',
+} = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero__bg"></div>
+  <div class="hero__dots"></div>
+  <div class="hero__inner">
+    <nav class="breadcrumb">
+      <a href="#">Home</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="#">Plan your trip</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>{title}</span>
+    </nav>
+    <h1>
+      {title}
+      <span>{subtitle}</span>
+    </h1>
+    <div class="hero__badge">{badge}</div>
+  </div>
+</section>
+
+<div class="footer-wave-wrap">
+  <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="height:60px">
+    <path d="M0,0 C360,60 1080,0 1440,40 L1440,0 Z"/>
+  </svg>
+</div>
