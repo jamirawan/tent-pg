@@ -1,0 +1,9 @@
+- working-directory: fuel-calculator
+        run: npm ci
+      - working-directory: fuel-calculator
+        run: npm run build
+      - name: Add .nojekyll
+        run: touch fuel-calculator/dist/.nojekyll  # ← add after build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: fuel-calculator/dist/

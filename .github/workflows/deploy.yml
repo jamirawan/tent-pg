@@ -1,0 +1,35 @@
+# .github/workflows/deploy.yml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - working-directory: projects/fuel-calculator   # ← updated
+        run: npm ci
+      - working-directory: projects/fuel-calculator   # ← updated
+        run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: projects/fuel-calculator/dist/        # ← updated
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
