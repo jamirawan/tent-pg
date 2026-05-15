@@ -110,7 +110,7 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
     </div>
     <div id="resultBody">
       <div class="empty-state">
-        <div class="big">🚗</div>
+        <div class="big"><img src="https://a.storyblok.com/f/286255898790625/800x800/bc07a8cec5/car-suv.svg" alt="Car" /></div>
         <div>Enter trip details and click Calculate to see results</div>
       </div>
     </div>
@@ -119,14 +119,14 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
 
 <script is:inline>
   const cars = [
-    { id: 'city', name: 'City Car', icon: '🚗', eff: 6.5, eg: 'Yaris, Polo' },
-    { id: 'sedan', name: 'Sedan', icon: '🚙', eff: 8.0, eg: 'Camry, Mazda3' },
-    { id: 'suv', name: 'SUV', icon: '🚐', eff: 10.5, eg: 'RAV4, CX-5' },
-    { id: 'truck', name: 'Ute / Truck', icon: '🛻', eff: 12.5, eg: 'HiLux, Ranger' },
-    { id: 'sports', name: 'Sports', icon: '🏎️', eff: 11.0, eg: 'BRZ, MX-5' },
-    { id: 'van', name: 'Van / Bus', icon: '🚌', eff: 14.0, eg: 'Hiace, Transit' },
-    { id: 'hybrid', name: 'Hybrid', icon: '🌿', eff: 4.5, eg: 'Prius, Corolla' },
-    { id: 'electric', name: 'Electric', icon: '⚡', eff: 0, eg: 'Tesla, BYD', isEv: true },
+    { id: 'city', name: 'City Car/Hatchback', icon: 'https://a.storyblok.com/f/286255898790625/800x800/ea5e65fa61/car-hatchback-city.svg', eff: 6.5, eg: 'Yaris, Polo' },
+    { id: 'sedan', name: 'Sedan', icon: 'https://a.storyblok.com/f/286255898790625/800x800/69b049ceee/sedan-car.svg', eff: 8.0, eg: 'Camry, Mazda3' },
+    { id: 'suv', name: 'SUV', icon: 'https://a.storyblok.com/f/286255898790625/800x800/bc07a8cec5/car-suv.svg', eff: 10.5, eg: 'RAV4, CX-5' },
+    { id: 'truck', name: 'Ute / Truck', icon: 'https://a.storyblok.com/f/286255898790625/800x800/08f78fc224/truck-pickup-ute-truck.svg', eff: 12.5, eg: 'HiLux, Ranger' },
+    { id: 'sports', name: 'Sports', icon: 'https://a.storyblok.com/f/286255898790625/800x800/69e5918ff4/car-sport.svg', eff: 11.0, eg: 'BRZ, MX-5' },
+    { id: 'van', name: 'Van / Bus', icon: 'https://a.storyblok.com/f/286255898790625/800x800/48ed265920/van-bus-car.svg', eff: 14.0, eg: 'Hiace, Transit' },
+    { id: 'hybrid', name: 'Hybrid', icon: 'https://a.storyblok.com/f/286255898790625/800x800/a9d8194a15/eco-car.svg', eff: 4.5, eg: 'Prius, Corolla' },
+    { id: 'electric', name: 'Electric', icon: 'https://a.storyblok.com/f/286255898790625/800x800/36a42d7953/electric-car.svg', eff: 0, eg: 'Tesla, BYD', isEv: true },
   ];
 
   const DIST = {
@@ -177,13 +177,19 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
     const grid = document.getElementById('carGrid');
     grid.innerHTML = cars
       .map(
-        (c) => `
+        (c) => {
+          const isUrl = c.icon.startsWith('http://') || c.icon.startsWith('https://');
+          const iconHtml = isUrl
+            ? `<img src="${c.icon}" alt="${c.name}" class="car-icon-svg" />`
+            : `<div class="car-icon-emoji">${c.icon}</div>`;
+          return `
       <div class="car-option" id="car_${c.id}" onclick="selectCar('${c.id}')">
-        <div class="car-icon">${c.icon}</div>
+        <div class="car-icon">${iconHtml}</div>
         <div class="car-name">${c.name}</div>
         <div class="car-eff">${c.eff}${c.eff ? ' L/100km' : ''}</div>
       </div>
-    `
+    `;
+        }
       )
       .join('');
   }

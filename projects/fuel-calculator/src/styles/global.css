@@ -423,6 +423,22 @@ main {
 .car-icon {
   font-size: 26px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+}
+
+.car-icon-svg {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.car-icon-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .car-name {
