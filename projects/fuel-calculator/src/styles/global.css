@@ -1004,12 +1004,12 @@ footer {
   align-items: center;
   gap: 10px;
   background: var(--tints-orange-10);
-  border: 1px solid rgba(230,99,0,.25);
+  border: 1px solid rgba(246, 200, 228, 0.598);
   border-radius: 12px;
   padding: 10px 16px;
   margin-top: 14px;
   font-size: 13px;
-  color: var(--brand-orange);
+  color: var(--brand-pink);
   font-weight: 500;
 }
 
