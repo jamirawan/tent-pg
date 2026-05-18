@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root{
+  --brand-blue: #1f1f5f;
+  --brand-orange: #e66300;
+  --page-padding: 32px;
+}
+
+*{box-sizing:border-box}
+
+body{margin:0;font-family:'DM Sans',Helvetica,Arial,sans-serif}
+
+.fuel-calc{position:relative;background:var(--brand-blue);overflow:hidden;min-height:260px;display:flex;align-items:center}
+.fuel-calc__bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 90% 50%, rgba(230,99,0,.25) 0%, transparent 60%),radial-gradient(ellipse 50% 60% at 10% 80%, rgba(219,12,103,.18) 0%, transparent 55%),linear-gradient(135deg,#1f1f5f 0%,#16165a 100%)}
+.fuel-calc__dots{position:absolute;top:0;right:0;bottom:0;left:0;background-image:radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);background-size:28px 28px;pointer-events:none}
+.fuel-calc__inner{position:relative;z-index:2;padding:48px var(--page-padding);max-width:1200px;margin:0 auto;width:100%}
+
+.breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.7)}
+.breadcrumb a{color:rgba(255,255,255,.7);text-decoration:none}
+.breadcrumb a:hover{color:#fff}
+.breadcrumb-sep{font-size:10px}
+
+.fuel-calc h1{font-family:'Ubuntu',sans-serif;font-size:clamp(36px,6vw,62px);font-weight:700;color:#fff;line-height:1.05;letter-spacing:-.02em;text-shadow:1px 0 30px rgba(0,0,0,.5);margin-bottom:10px}
+.fuel-calc h1 span{display:block;font-size:.45em;font-weight:400;opacity:.85;margin-top:6px}
+
+.fuel-calc__badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:600;color:#fff;margin-top:16px}
+
+/* small responsive */
+@media (max-width:600px){.fuel-calc__inner{padding:32px 20px}.fuel-calc h1{font-size:28px}}

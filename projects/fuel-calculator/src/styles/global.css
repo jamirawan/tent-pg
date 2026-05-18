@@ -638,15 +638,18 @@ input[type="number"]:focus {
 }
 
 .empty-state .big {
-  font-size: 36px;
+  height: 100px;
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-state .big img {
   display: block;
   width: auto;
   max-width: 100%;
-  height: 48px;
+  max-height: 100%;
   margin: 0 auto;
 }
 

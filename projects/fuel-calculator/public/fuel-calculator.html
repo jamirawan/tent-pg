@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fuel Calculator — Standalone</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <div class="section-label">Plan smarter</div>
+      <h2 class="section-title">Calculate your <span>fuel costs</span></h2>
+
+      <div class="dest-section">
+        <p class="dest-subtitle">Select a route between Australian capital cities to auto-fill the distance, or enter your own below.</p>
+
+        <div class="dest-selector">
+          <div class="dest-select-wrap">
+            <span class="dest-label">From</span>
+            <select id="destFrom" class="dest-select" onchange="onRouteChange()">
+              <option value="">Select city</option>
+              <option value="SYD">Sydney</option>
+              <option value="MEL">Melbourne</option>
+              <option value="BNE">Brisbane</option>
+              <option value="PER">Perth</option>
+              <option value="ADL">Adelaide</option>
+              <option value="CBR">Canberra</option>
+              <option value="HBA">Hobart</option>
+              <option value="DRW">Darwin</option>
+              <option value="ASP">Alice Springs</option>
+              <option value="NHU">Nhulunbuy</option>
+              <option value="KTR">Katherine</option>
+            </select>
+            <span class="dest-select-arrow">▾</span>
+          </div>
+
+          <button class="dest-swap-btn" onclick="swapCities()" title="Swap cities">⇄</button>
+
+          <div class="dest-select-wrap">
+            <span class="dest-label">To</span>
+            <select id="destTo" class="dest-select" onchange="onRouteChange()">
+              <option value="">Select city</option>
+              <option value="SYD">Sydney</option>
+              <option value="MEL">Melbourne</option>
+              <option value="BNE">Brisbane</option>
+              <option value="PER">Perth</option>
+              <option value="ADL">Adelaide</option>
+              <option value="CBR">Canberra</option>
+              <option value="HBA">Hobart</option>
+              <option value="DRW">Darwin</option>
+              <option value="ASP">Alice Springs</option>
+              <option value="NHU">Nhulunbuy</option>
+              <option value="KTR">Katherine</option>
+            </select>
+            <span class="dest-select-arrow">▾</span>
+          </div>
+
+          <button class="dest-go-btn" onclick="applyRoute()">Use this route →</button>
+        </div>
+
+        <div class="dest-pills" id="quickPills"></div>
+
+        <div class="dest-info-strip" id="destInfoStrip">
+          <span>📍</span>
+          <span id="destInfoText"></span>
+        </div>
+      </div>
+
+      <div class="calc-layout">
+        <div class="card">
+          <div class="card-title">Vehicle Type</div>
+          <div class="car-grid" id="carGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Trip Details</div>
+
+          <div class="field">
+            <label for="distance">Distance</label>
+            <div class="input-wrap">
+              <input type="number" id="distance" placeholder="Enter distance (km)" />
+              <span class="input-suffix">km</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fuelPrice">Fuel Price</label>
+            <div class="input-wrap">
+              <input type="number" id="fuelPrice" placeholder="Enter price" step="0.01" />
+              <span class="input-suffix">$/L</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fuelEfficiency">Fuel Efficiency <em>(override optional)</em></label>
+            <div class="input-wrap">
+              <input type="number" id="fuelEfficiency" placeholder="L/100km" step="0.1" />
+              <span class="input-suffix">L/100km</span>
+            </div>
+            <div class="eff-note" id="effNote">Select a vehicle to see its default efficiency</div>
+          </div>
+
+          <div class="field">
+            <label for="passengers">Passengers</label>
+            <div class="input-wrap">
+              <input type="number" id="passengers" placeholder="1" value="1" min="1" />
+              <span class="input-suffix">people</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-header">
+            <div class="result-header-title">Results</div>
+            <button class="calc-btn" onclick="calculate()">Calculate →</button>
+          </div>
+          <div id="resultBody">
+            <div class="empty-state">
+              <div class="big"><img src="https://a.storyblok.com/f/286255898790625/800x800/bc07a8cec5/car-suv.svg" alt="Car" /></div>
+              <div>Enter trip details and click Calculate to see results</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-card">
+          <h3>NT Road Tip</h3>
+          <p>The Central Arnhem Road from Katherine to Nhulunbuy is approximately 700 km — plan extra fuel stops as remote stations can be scarce.</p>
+        </div>
+        <div class="info-card">
+          <h3>NT Fuel Prices</h3>
+          <p>Fuel prices in remote NT can be significantly higher than Darwin or Alice Springs. Budget an extra 20–40¢/L for outback travel.</p>
+        </div>
+        <div class="info-card">
+          <h3>4WD Tip</h3>
+          <p>Many NT tracks require a 4WD vehicle. Fuel efficiency drops on unsealed roads — increase your estimate by 15–20% for dirt tracks.</p>
+        </div>
+      </div>
+    </main>
+
+    <script src="/script.js"></script>
+  </body>
+</html>
