@@ -37,6 +37,13 @@ const CITY_NAMES = {
   KTR: 'Katherine',
 };
 
+const CITY_DESTINATIONS = {
+  DRW: 'Darwin',
+  ASP: 'Alice Springs',
+  NHU: 'Nhulunbuy',
+  KTR: 'Katherine',
+};
+
 const POPULAR_ROUTES = [
   { from: 'SYD', to: 'DRW', label: 'Sydney → Darwin' },
   { from: 'MEL', to: 'DRW', label: 'Melbourne → Darwin' },
@@ -79,16 +86,23 @@ function selectCar(id) {
 
   const note = document.getElementById('effNote');
   const effInput = document.getElementById('fuelEfficiency');
+  const fuelPriceInput = document.getElementById('fuelPrice');
 
   if (selectedCar.isEv) {
-    note.innerHTML = `⚡ Electric — <strong>no fuel cost</strong>`;
+    note.innerHTML = `⚡ Electric — <strong>no fuel cost</strong>. You are using an electric car, no fuel required. Here's the link to the electric car charger: <a href="https://northernterritory.com/plan/car-charger">Car chargers in the NT</a>`;
     effInput.placeholder = 'N/A';
     effInput.disabled = true;
     effInput.value = '';
+    fuelPriceInput.value = 0;
+    fuelPriceInput.disabled = true;
+    fuelPriceInput.style.color = 'red';
   } else {
     note.innerHTML = `Default for <strong>${selectedCar.name}</strong>: <strong>${selectedCar.eff} L/100km</strong> (${selectedCar.eg})`;
     effInput.placeholder = selectedCar.eff;
     effInput.disabled = false;
+    fuelPriceInput.disabled = false;
+    fuelPriceInput.style.color = '';
+    if (fuelPriceInput.value === '0') fuelPriceInput.value = '';
   }
 }
 
@@ -129,7 +143,7 @@ function onRouteChange() {
   if (from && to && from !== to && DIST[from] && DIST[from][to]) {
     const km = DIST[from][to];
     strip.classList.add('visible');
-    text.innerHTML = `<strong>${CITY_NAMES[from]}</strong> to <strong>${CITY_NAMES[to]}</strong> — approximately <strong>${km.toLocaleString()} km</strong> by road. Click "Use this route" to auto-fill the distance.`;
+    text.innerHTML = `<strong>${CITY_NAMES[from]}</strong> to <strong>${CITY_DESTINATIONS[to] || CITY_NAMES[to]}</strong> — approximately <strong>${km.toLocaleString()} km</strong> by road. Click "Use this route" to auto-fill the distance.`;
   } else {
     strip.classList.remove('visible');
   }
@@ -175,22 +189,25 @@ function calculate() {
     return;
   }
 
-  let totalCost, litersUsed, co2kg;
-
   if (selectedCar.isEv) {
-    totalCost = 0;
-    litersUsed = 0;
-    co2kg = 0;
-  } else {
-    if (!fuelPrice || fuelPrice <= 0) {
-      showError('Please enter a valid fuel price per litre.');
-      return;
-    }
-    if (!efficiency || isNaN(efficiency)) efficiency = selectedCar.eff;
-    litersUsed = (distance / 100) * efficiency;
-    totalCost = litersUsed * fuelPrice;
-    co2kg = litersUsed * 2.31;
+    document.getElementById('resultBody').innerHTML = `
+      <div class="empty-state">
+        <div class="big">⚡</div>
+        <div>You are using an electric car, no fuel required.</div>
+        <div style="margin-top: 8px;">Here's the link to the electric car charger: <a href="https://northernterritory.com/plan/car-charger">Car chargers in the NT</a></div>
+      </div>`;
+    return;
   }
+
+  if (!fuelPrice || fuelPrice <= 0) {
+    showError('Please enter a valid fuel price per litre.');
+    return;
+  }
+  if (!efficiency || isNaN(efficiency)) efficiency = selectedCar.eff;
+
+  const litersUsed = (distance / 100) * efficiency;
+  const totalCost = litersUsed * fuelPrice;
+  const co2kg = litersUsed * 2.31;
 
   const perPerson = passengers > 0 ? totalCost / passengers : totalCost;
   const barMax = Math.max(totalCost, 300);
@@ -200,11 +217,11 @@ function calculate() {
   const to = document.getElementById('destTo').value;
   const routeLabel =
     from && to && from !== to && DIST[from]?.[to]
-      ? `${CITY_NAMES[from]} → ${CITY_NAMES[to]}`
+      ? `${CITY_NAMES[from]} → ${CITY_DESTINATIONS[to] || CITY_NAMES[to]}`
       : `${distance.toLocaleString()} km · ${selectedCar.name}`;
 
   const destSummary = from && to && from !== to
-    ? `${CITY_NAMES[from]} → ${CITY_NAMES[to]} · ${distance.toLocaleString()} km`
+    ? `${CITY_NAMES[from]} → ${CITY_DESTINATIONS[to] || CITY_NAMES[to]} · ${distance.toLocaleString()} km`
     : `${distance.toLocaleString()} km trip`;
 
   document.getElementById('resultBody').innerHTML = `
