@@ -44,6 +44,9 @@ const CITY_DESTINATIONS = {
   KTR: 'Katherine',
 };
 
+// NT destination codes
+const NT_DESTS = new Set(['DRW', 'ASP', 'NHU', 'KTR']);
+
 const POPULAR_ROUTES = [
   { from: 'SYD', to: 'DRW', label: 'Sydney → Darwin' },
   { from: 'MEL', to: 'DRW', label: 'Melbourne → Darwin' },
@@ -108,17 +111,18 @@ function selectCar(id) {
 
 function renderQuickPills() {
   const wrap = document.getElementById('quickPills');
-  wrap.innerHTML = POPULAR_ROUTES.map(
-    (r, i) => `
-      <button class="dest-pill" id="pill_${i}" onclick="selectPill(${i})">${r.label}</button>
-    `
-  ).join('');
+  // Only render pills that have NT destinations (to value in NT_DESTS)
+  const ntRoutes = POPULAR_ROUTES.filter((r) => NT_DESTS.has(r.to));
+  wrap.innerHTML = ntRoutes
+    .map((r, i) => `
+      <button class="dest-pill" id="pill_${i}" onclick="selectPill('${r.from}','${r.to}', ${i})">${r.label}</button>
+    `)
+    .join('');
 }
 
-function selectPill(idx) {
-  const r = POPULAR_ROUTES[idx];
-  document.getElementById('destFrom').value = r.from;
-  document.getElementById('destTo').value = r.to;
+function selectPill(from, to, idx) {
+  document.getElementById('destFrom').value = from;
+  document.getElementById('destTo').value = to;
   document.querySelectorAll('.dest-pill').forEach((p) => p.classList.remove('active'));
   const pill = document.getElementById('pill_' + idx);
   if (pill) pill.classList.add('active');
