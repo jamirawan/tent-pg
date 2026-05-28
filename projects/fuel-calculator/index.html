@@ -77,74 +77,75 @@
             </select>
             <span class="dest-select-arrow">▾</span>
           </div>
-
-          <button class="dest-go-btn" onclick="applyRoute()">Use this route →</button>
+        <div class="trip-toggle">
+          <label>
+            <input type="radio" name="trip-type" value="one-way" onchange="setTripType('one-way')" checked />
+            One way
+          </label>
+          <label>
+            <input type="radio" name="trip-type" value="return" onchange="setTripType('return')" />
+            Return trip
+          </label>
         </div>
 
-        <div class="dest-pills" id="quickPills"></div>
-
-        <div class="dest-info-strip" id="destInfoStrip">
-          <span>📍</span>
-          <span id="destInfoText"></span>
-        </div>
+        <button class="dest-go-btn" onclick="applyRoute()">Use this route →</button>
       </div>
+
+      <div class="dest-info-strip" id="destInfoStrip">
+        <span>📍</span>
+        <span id="destInfoText"></span>
+      </div>
+    </div>
 
       <div class="calc-layout">
         <div class="card">
-          <div class="card-title">Vehicle Type</div>
+          <div class="card-title">Vehicle type</div>
           <div class="car-grid" id="carGrid"></div>
         </div>
 
         <div class="card">
-          <div class="card-title">Trip Details</div>
+          <div class="card-title">Estimate your fuel costs</div>
 
           <div class="field">
-            <label for="distance">Distance</label>
+            <label>Distance</label>
             <div class="input-wrap">
               <input type="number" id="distance" placeholder="Enter distance (km)" />
               <span class="input-suffix">km</span>
             </div>
+            <div class="field-note" id="distanceNote"></div>
           </div>
 
           <div class="field">
-            <label for="fuelPrice">Fuel Price</label>
+            <label>Average fuel price</label>
             <div class="input-wrap">
-              <input type="number" id="fuelPrice" placeholder="Enter price" step="0.01" />
+              <input type="number" id="fuelPrice" placeholder="e.g. 2.10" step="0.01" />
               <span class="input-suffix">$/L</span>
             </div>
           </div>
 
           <div class="field">
-            <label for="fuelEfficiency">Fuel Efficiency <em>(override optional)</em></label>
+            <label>Average fuel consumption <span class="label-optional">(override optional)</span></label>
             <div class="input-wrap">
               <input type="number" id="fuelEfficiency" placeholder="L/100km" step="0.1" />
               <span class="input-suffix">L/100km</span>
             </div>
-            <div class="eff-note" id="effNote">Select a vehicle to see its default efficiency</div>
+            <div class="field-note" id="effNote">Select a vehicle type to see its consumption range.</div>
           </div>
 
-          <div class="field">
-            <label for="passengers">Passengers</label>
-            <div class="input-wrap">
-              <input type="number" id="passengers" placeholder="1" value="1" min="1" />
-              <span class="input-suffix">people</span>
-            </div>
-          </div>
-        </div>
+        <button class="calc-btn" onclick="calculate()">Calculate →</button>
+      </div>
 
-        <div class="result-card">
-          <div class="result-header">
-            <div class="result-header-title">Results</div>
-            <button class="calc-btn" onclick="calculate()">Calculate →</button>
-          </div>
-          <div id="resultBody">
-            <div class="empty-state">
-              <div class="big"><img src="https://a.storyblok.com/f/286255898790625/800x800/bc07a8cec5/car-suv.svg" alt="Car" /></div>
-              <div>Enter trip details and click Calculate to see results</div>
-            </div>
+      <!-- Results -->
+      <div class="result-card" id="resultCard">
+        <div id="resultBody">
+          <div class="empty-state">
+            <div class="empty-icon"><img src="https://a.storyblok.com/f/286255898790625/800x800/bc07a8cec5/car-suv.svg" alt="Car" /></div>
+            <div>Select a vehicle type, enter your trip details and hit Calculate.</div>
           </div>
         </div>
       </div>
+
+    </div>
 
       <div class="info-section">
         <div class="info-card">
