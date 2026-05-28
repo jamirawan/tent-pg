@@ -31,13 +31,6 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
       <span class="dest-label">To</span>
       <select id="destTo" class="dest-select" onchange="onRouteChange()">
         <option value="">Select city</option>
-        <option value="SYD">Sydney</option>
-        <option value="MEL">Melbourne</option>
-        <option value="BNE">Brisbane</option>
-        <option value="PER">Perth</option>
-        <option value="ADL">Adelaide</option>
-        <option value="CBR">Canberra</option>
-        <option value="HBA">Hobart</option>
         <option value="DRW">Darwin</option>
         <option value="ASP">Alice Springs</option>
         <option value="NHU">Nhulunbuy</option>
@@ -48,8 +41,6 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
 
     <button class="dest-go-btn" onclick="applyRoute()">Use this route →</button>
   </div>
-
-  <div class="dest-pills" id="quickPills"></div>
 
   <div class="dest-info-strip" id="destInfoStrip">
     <span>📍</span>
@@ -93,20 +84,13 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
       <div class="eff-note" id="effNote">Select a vehicle to see its default efficiency</div>
     </div>
 
-    <div class="field">
-      <label>Passengers</label>
-      <div class="input-wrap">
-        <input type="number" id="passengers" placeholder="1" value="1" min="1" />
-        <span class="input-suffix">people</span>
-      </div>
-    </div>
+    <button class="calc-btn" onclick="calculate()">Calculate →</button>
   </div>
 
   <!-- Results -->
   <div class="result-card">
     <div class="result-header">
       <div class="result-header-title">Results</div>
-      <button class="calc-btn" onclick="calculate()">Calculate →</button>
     </div>
     <div id="resultBody">
       <div class="empty-state">
@@ -126,7 +110,6 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
     { id: 'sports', name: 'Sports', icon: 'https://a.storyblok.com/f/286255898790625/800x800/69e5918ff4/car-sport.svg', eff: 11.0, eg: 'BRZ, MX-5' },
     { id: 'van', name: 'Van / Bus', icon: 'https://a.storyblok.com/f/286255898790625/800x800/48ed265920/van-bus-car.svg', eff: 14.0, eg: 'Hiace, Transit' },
     { id: 'hybrid', name: 'Hybrid', icon: 'https://a.storyblok.com/f/286255898790625/800x800/a9d8194a15/eco-car.svg', eff: 4.5, eg: 'Prius, Corolla' },
-    { id: 'electric', name: 'Electric', icon: 'https://a.storyblok.com/f/286255898790625/800x800/36a42d7953/electric-car.svg', eff: 0, eg: 'Tesla, BYD', isEv: true },
   ];
 
   const DIST = {
@@ -144,17 +127,9 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
   };
 
   const CITY_NAMES = {
-    SYD: 'Sydney',
-    MEL: 'Melbourne',
-    BNE: 'Brisbane',
-    PER: 'Perth',
-    ADL: 'Adelaide',
-    CBR: 'Canberra',
-    HBA: 'Hobart',
-    DRW: 'Darwin',
-    ASP: 'Alice Springs',
-    NHU: 'Nhulunbuy',
-    KTR: 'Katherine',
+    SYD: 'Sydney', MEL: 'Melbourne', BNE: 'Brisbane', PER: 'Perth',
+    ADL: 'Adelaide', CBR: 'Canberra', HBA: 'Hobart', DRW: 'Darwin',
+    ASP: 'Alice Springs', NHU: 'Nhulunbuy', KTR: 'Katherine',
   };
 
   const POPULAR_ROUTES = [
@@ -175,23 +150,19 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
 
   function renderCars() {
     const grid = document.getElementById('carGrid');
-    grid.innerHTML = cars
-      .map(
-        (c) => {
-          const isUrl = c.icon.startsWith('http://') || c.icon.startsWith('https://');
-          const iconHtml = isUrl
-            ? `<img src="${c.icon}" alt="${c.name}" class="car-icon-svg" />`
-            : `<div class="car-icon-emoji">${c.icon}</div>`;
-          return `
-      <div class="car-option" id="car_${c.id}" onclick="selectCar('${c.id}')">
-        <div class="car-icon">${iconHtml}</div>
-        <div class="car-name">${c.name}</div>
-        <div class="car-eff">${c.eff}${c.eff ? ' L/100km' : ''}</div>
-      </div>
-    `;
-        }
-      )
-      .join('');
+    grid.innerHTML = cars.map((c) => {
+      const isUrl = c.icon.startsWith('http://') || c.icon.startsWith('https://');
+      const iconHtml = isUrl
+        ? `<img src="${c.icon}" alt="${c.name}" class="car-icon-svg" />`
+        : `<div class="car-icon-emoji">${c.icon}</div>`;
+      return `
+        <div class="car-option" id="car_${c.id}" onclick="selectCar('${c.id}')">
+          <div class="car-icon">${iconHtml}</div>
+          <div class="car-name">${c.name}</div>
+          <div class="car-eff">${c.eff ? c.eff + ' L/100km' : ''}</div>
+        </div>
+      `;
+    }).join('');
   }
 
   function selectCar(id) {
@@ -214,10 +185,9 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
 
   function renderQuickPills() {
     const wrap = document.getElementById('quickPills');
-    wrap.innerHTML = POPULAR_ROUTES.map(
-      (r, i) => `
-      <button class="dest-pill" id="pill_${i}" onclick="selectPill(${i})">${r.label}</button>
-    `
+    if (!wrap) return;
+    wrap.innerHTML = POPULAR_ROUTES.map((r, i) =>
+      `<button class="dest-pill" id="pill_${i}" onclick="selectPill(${i})">${r.label}</button>`
     ).join('');
   }
 
@@ -245,7 +215,7 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
       }
     }
 
-    if (from && to && from !== to && DIST[from] && DIST[from][to]) {
+    if (from && to && from !== to && DIST[from]?.[to]) {
       const km = DIST[from][to];
       strip.classList.add('visible');
       text.innerHTML = `<strong>${CITY_NAMES[from]}</strong> to <strong>${CITY_NAMES[to]}</strong> — approximately <strong>${km.toLocaleString()} km</strong> by road. Click "Use this route" to auto-fill the distance.`;
@@ -261,7 +231,7 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
       alert('Please select two different cities.');
       return;
     }
-    if (!DIST[from] || !DIST[from][to]) {
+    if (!DIST[from]?.[to]) {
       alert('Distance data not available for this route.');
       return;
     }
@@ -282,17 +252,10 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
   function calculate() {
     const distance = parseFloat(document.getElementById('distance').value);
     const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
-    const passengers = parseInt(document.getElementById('passengers').value) || 1;
     let efficiency = parseFloat(document.getElementById('fuelEfficiency').value);
 
-    if (!selectedCar) {
-      showError('Please select a vehicle type.');
-      return;
-    }
-    if (!distance || distance <= 0) {
-      showError('Please enter a valid distance.');
-      return;
-    }
+    if (!selectedCar) { showError('Please select a vehicle type.'); return; }
+    if (!distance || distance <= 0) { showError('Please enter a valid distance.'); return; }
 
     let totalCost, litersUsed, co2kg;
 
@@ -301,24 +264,21 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
       litersUsed = 0;
       co2kg = 0;
     } else {
-      if (!fuelPrice || fuelPrice <= 0) {
-        showError('Please enter a valid fuel price per litre.');
-        return;
-      }
+      if (!fuelPrice || fuelPrice <= 0) { showError('Please enter a valid fuel price per litre.'); return; }
       if (!efficiency || isNaN(efficiency)) efficiency = selectedCar.eff;
       litersUsed = (distance / 100) * efficiency;
       totalCost = litersUsed * fuelPrice;
       co2kg = litersUsed * 2.31;
     }
 
-    const perPerson = passengers > 0 ? totalCost / passengers : totalCost;
     const barMax = Math.max(totalCost, 300);
     const barPct = Math.min((totalCost / barMax) * 100, 100);
 
     const from = document.getElementById('destFrom').value;
     const to = document.getElementById('destTo').value;
-    const routeLabel =
-      from && to && from !== to && DIST[from]?.[to] ? `${CITY_NAMES[from]} → ${CITY_NAMES[to]}` : `${distance.toLocaleString()} km · ${selectedCar.name}`;
+    const routeLabel = from && to && from !== to && DIST[from]?.[to]
+      ? `${CITY_NAMES[from]} → ${CITY_NAMES[to]}`
+      : `${distance.toLocaleString()} km · ${selectedCar.name}`;
 
     document.getElementById('resultBody').innerHTML = `
       <div class="result-grid">
@@ -326,11 +286,6 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
           <div class="result-label">Total Cost</div>
           <div class="result-value highlight">$${totalCost.toFixed(2)}</div>
           <div class="result-unit">Total trip</div>
-        </div>
-        <div class="result-item">
-          <div class="result-label">Per Person</div>
-          <div class="result-value">$${perPerson.toFixed(2)}</div>
-          <div class="result-unit">${passengers} ${passengers === 1 ? 'person' : 'people'}</div>
         </div>
         <div class="result-item">
           <div class="result-label">Fuel Used</div>
@@ -369,16 +324,10 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
       </div>`;
   }
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') calculate();
-  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Enter') calculate(); });
 
-  // Initialize when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      renderCars();
-      renderQuickPills();
-    });
+    document.addEventListener('DOMContentLoaded', () => { renderCars(); renderQuickPills(); });
   } else {
     renderCars();
     renderQuickPills();
