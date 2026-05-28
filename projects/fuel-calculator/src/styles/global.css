@@ -1140,3 +1140,168 @@ footer {
   height: 18px;
   accent-color: var(--brand-pink);
 }
+
+/* ── Trip type toggle ── */
+.trip-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+.trip-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1.5px solid var(--grey-20);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--grey-60);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.trip-btn:hover:not(.active) {
+  border-color: var(--brand-pink);
+  color: var(--brand-pink);
+}
+.trip-btn.active {
+  border-color: var(--brand-pink);
+  background: var(--brand-pink);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ── Field helpers ── */
+.label-optional {
+  font-weight: 400;
+  font-style: normal;
+  color: var(--grey-50);
+  font-size: 0.85em;
+}
+.field-note {
+  font-size: 0.8rem;
+  color: var(--grey-50);
+  margin-top: 0.3rem;
+  line-height: 1.4;
+}
+
+/* ── Result card ── */
+.result-card {
+  background: var(--grey-05, #f7f7f7);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* Cost summary block — white for contrast */
+.result-summary {
+  background: #fff;
+  border: 1.5px solid var(--grey-15, #e8e8e8);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.result-cost-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--grey-50);
+  margin-bottom: 0.35rem;
+}
+.result-cost-value {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--brand-pink);
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+}
+.result-cost-sub {
+  font-size: 0.82rem;
+  color: var(--grey-50);
+  line-height: 1.4;
+}
+
+/* Detail rows */
+.result-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 1.25rem;
+}
+.result-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.875rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--grey-10, #f0f0f0);
+}
+.result-detail-row:last-child {
+  border-bottom: none;
+}
+.detail-label {
+  color: var(--grey-50);
+}
+.detail-value {
+  font-weight: 600;
+  color: var(--grey-90);
+}
+
+/* Range bar */
+.result-bar-wrap {
+  margin-bottom: 1rem;
+}
+.bar-track {
+  height: 10px;
+  background: var(--grey-10, #efefef);
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+.bar-fill-hi {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  background: var(--brand-pink);
+  opacity: 0.25;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+.bar-fill-lo {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  background: var(--brand-pink);
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+.bar-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--grey-40);
+}
+
+/* Disclaimer */
+.result-disclaimer {
+  font-size: 0.75rem;
+  color: var(--grey-40);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--grey-40);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+.empty-icon img {
+  width: 72px;
+  opacity: 0.35;
+}
