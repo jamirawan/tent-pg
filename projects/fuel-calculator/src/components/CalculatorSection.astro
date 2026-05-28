@@ -39,6 +39,17 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
       <span class="dest-select-arrow">▾</span>
     </div>
 
+    <div class="trip-toggle">
+      <label>
+        <input type="radio" name="trip-type" value="one-way" onchange="setTripType('one-way')" checked />
+        One way
+      </label>
+      <label>
+        <input type="radio" name="trip-type" value="return" onchange="setTripType('return')" />
+        Return trip
+      </label>
+    </div>
+
     <button class="dest-go-btn" onclick="applyRoute()">Use this route →</button>
   </div>
 
@@ -60,13 +71,7 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
   <div class="card">
     <div class="card-title">Estimate your fuel costs</div>
 
-    <div class="field">
-      <label>Trip type</label>
-      <div class="trip-toggle">
-        <button class="trip-btn active" id="btnOneWay" onclick="setTripType('one-way')">One way</button>
-        <button class="trip-btn" id="btnReturn" onclick="setTripType('return')">Return trip</button>
-      </div>
-    </div>
+
 
     <div class="field">
       <label>Distance</label>
@@ -210,8 +215,7 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
   }
 
   tripType = type;
-  document.getElementById('btnOneWay').classList.toggle('active', type === 'one-way');
-  document.getElementById('btnReturn').classList.toggle('active', type === 'return');
+  onRouteChange();
 }
 
   function updateDistanceNote() {
@@ -267,8 +271,10 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
 
     if (from && to && from !== to && DIST[from]?.[to]) {
       const km = DIST[from][to];
+      const totalKm = tripType === 'return' ? km * 2 : km;
+      const returnLabel = tripType === 'return' ? ' (Return)' : '';
       strip.classList.add('visible');
-      text.innerHTML = `<strong>${CITY_NAMES[from]}</strong> to <strong>${CITY_NAMES[to]}</strong> — approximately <strong>${km.toLocaleString()} km</strong> by road. Click "Use this route" to auto-fill the distance.`;
+      text.innerHTML = `<strong>${CITY_NAMES[from]}</strong> to <strong>${CITY_NAMES[to]}</strong>${returnLabel} — approximately <strong>${totalKm.toLocaleString()} km</strong> by road. Click "Use this route" to auto-fill the distance.`;
     } else {
       strip.classList.remove('visible');
     }
@@ -361,49 +367,37 @@ import { CITY_NAMES, DIST, POPULAR_ROUTES, cars } from '../scripts/calculator';
         <div class="result-cost-block">
           <div class="result-cost-label">Estimated fuel cost</div>
           <div class="result-cost-value">${costDisplay}</div>
-          <div class="result-cost-sub">${routeStr} · ${selectedCar.name}</div>
+          <div class="result-cost-sub">
+            <div class="result-summary-row">
+              <span class="result-summary-label">Route</span>
+              <span class="result-summary-value">${routeStr}</span>
+            </div>
+            <div class="result-summary-row">
+              <span class="result-summary-label">Vehicle</span>
+              <span class="result-summary-value">${selectedCar.name}</span>
+            </div>
+            <div class="result-summary-row">
+              <span class="result-summary-label">Distance</span>
+              <span class="result-summary-value">${totalDist.toLocaleString()} km</span>
+            </div>
+            <div class="result-summary-row">
+              <span class="result-summary-label">Fuel used</span>
+              <span class="result-summary-value">${litersDisplay}</span>
+            </div>
+            <div class="result-summary-row">
+              <span class="result-summary-label">Consumption range</span>
+              <span class="result-summary-value">${effDisplay}</span>
+            </div>
+            <div class="result-summary-row">
+              <span class="result-summary-label">Fuel price used</span>
+              <span class="result-summary-value">$${fuelPrice.toFixed(2)}/L</span>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="result-details">
-        <div class="result-detail-row">
-          <span class="detail-label">Distance</span>
-          <span class="detail-value">${distStr}</span>
-        </div>
-        <div class="result-detail-row">
-          <span class="detail-label">Fuel used</span>
-          <span class="detail-value">${litersDisplay}</span>
-        </div>
-        <div class="result-detail-row">
-          <span class="detail-label">Consumption range</span>
-          <span class="detail-value">${effDisplay}</span>
-        </div>
-        <div class="result-detail-row">
-          <span class="detail-label">Fuel price used</span>
-          <span class="detail-value">$${fuelPrice.toFixed(2)}/L</span>
-        </div>
-      </div>
-
-      <div class="result-bar-wrap">
-        <div class="bar-track">
-          <div class="bar-fill-lo" id="barFillLo" style="width:0%"></div>
-          <div class="bar-fill-hi" id="barFillHi" style="width:0%"></div>
-        </div>
-        <div class="bar-meta">
-          <span>$0</span>
-          <span>$${barMax.toFixed(0)}</span>
-        </div>
-      </div>
-
-      <p class="result-disclaimer">* Estimates only. Actual costs vary with driving style, load, road conditions, and fuel stop prices.</p>
     `;
 
-    setTimeout(() => {
-      const lo = document.getElementById('barFillLo');
-      const hi = document.getElementById('barFillHi');
-      if (hi) hi.style.width = barPctHi + '%';
-      if (lo) lo.style.width = barPctLo + '%';
-    }, 50);
+
   }
 
   function showError(msg) {

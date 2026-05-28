@@ -532,6 +532,98 @@ input[type="number"]:focus {
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
+  padding: 28px;
+}
+
+.result-summary {
+  margin-bottom: 28px;
+}
+
+.result-cost-block {
+  background: linear-gradient(135deg, var(--brand-blue) 0%, rgba(31,31,95,.8) 100%);
+  border-radius: 16px;
+  padding: 24px;
+  color: #fff;
+}
+
+.result-cost-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: .85;
+  margin-bottom: 8px;
+}
+
+.result-cost-value {
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.result-cost-sub {
+  font-size: 13px;
+  opacity: .85;
+  line-height: 1.5;
+  border-top: 1px solid rgba(255,255,255,.2);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.result-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 12px;
+}
+
+.result-summary-label {
+  opacity: .75;
+}
+
+.result-summary-value {
+  font-weight: 600;
+  opacity: 1;
+}
+
+.result-details {
+  border-top: 1px solid var(--grey-25);
+  padding-top: 24px;
+}
+
+.result-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--grey-10);
+}
+
+.result-detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--grey-75);
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand-blue);
+}
+
+.result-disclaimer {
+  font-size: 11px;
+  color: var(--grey-50);
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--grey-10);
+  line-height: 1.5;
 }
 
 .result-header {
@@ -1022,4 +1114,29 @@ footer {
 
 .dest-info-strip strong {
   color: var(--brand-blue);
+}
+
+/* ===== TRIP TOGGLE ===== */
+.trip-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trip-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-charcoal);
+}
+
+.trip-toggle input[type="radio"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand-pink);
 }
