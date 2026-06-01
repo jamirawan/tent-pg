@@ -1,0 +1,89 @@
+---
+// FlydiDect.astro
+---
+
+ <div class="hero__content">
+    <h2 id="flights-header" style="font-size:2.5rem;padding:50px; color: white;"> Fly direct to the NT</h2>
+
+    <div>
+      <div>
+        <label for="noak-options" class="your-destinations"  style="color: white;">YOUR DESTINATION</label>
+      </div>
+
+      <div class="flights-options">
+        <select name="options" id="noak-options">
+          <option value="https://www.webjet.com.au/destinations/northernterritory">DRW - DARWIN</option>
+          <option value="https://www.webjet.com.au/destinations/northernterritory">ASP - ALICE SPRINGS</option>
+          <option value="https://www.webjet.com.au/destinations/northernterritory">AYQ - AYERS ROCK</option>
+        </select>
+
+        <button id="noak-book-now" class="book-flight" onclick="window.open(document.getElementById('noak-options').value, '_blank')">BOOK NOW</button>
+      </div>
+
+      <div>
+        <p style="text-align:center; padding:20px;">
+          <img style="width:150px;" src="https://media.webjet.com.au/ui/images/footer-logo-au-white.png" alt="Webjet">
+        </p>
+      </div>
+    </div>
+  </div>
+
+<script is:inline>
+(function() {
+  const hero = document.querySelector('.hero--mask');
+  if (!hero) return;
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .direct-flights-wrapper {
+      position: absolute;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 10;
+           text-align: center;
+    }
+    .direct-flights-text {
+      color: black;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    .direct-flights {
+      display: flex;
+      justify-content: center;
+      padding: 12px 24px;
+      background: white;
+      color: black;
+      border-radius: 0px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: none;
+      font-weight:800;
+   
+    }
+    @media (max-width: 768px) {
+      .direct-flights-wrapper {
+        right: 50%;
+        transform: translateX(50%);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'direct-flights-wrapper';
+  wrapper.innerHTML = `
+    <p class="direct-flights-text">Book your direct flight to the Northern Territory and discover None of a Kind experiences.</p>
+    <a class="direct-flights" href="#flights-section">BOOK YOUR FLIGHT</a>
+  `;
+
+  hero.style.position = 'relative';
+  hero.appendChild(wrapper);
+})();
+
+const section = document.querySelectorAll('.editorial-listing')[0];
+section.style.backgroundColor = '#000';
+section.style.color = 'white';
+section.style.paddingTop = '80px';
+section.style.paddingBottom = '80px';
+section.querySelector('h2').style.color = 'white';
+</script>

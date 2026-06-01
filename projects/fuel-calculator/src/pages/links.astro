@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import HeroProto from '../components/HeroProto.astro';
+import Footer from '../components/Footer.astro';
+import InfoCards from '../components/InfoCards.astro';
+import LinksCards from '../components/LinksCards.astro';
+---
+
+<Layout title="Plan your trip with confidence | Northern Territory, Australia" description="Estimate your road trip costs across the NT">
+  <Header />
+  <HeroProto title="Components prototype" subtitle="List of custom HTML components for nt.com" badge="Working boards" />
+  <main>
+    <div class="section-label">Working list</div>
+    <h2 class="section-title">Links to the component pages</h2>
+
+    
+
+    <LinksCards />
+  </main>
+  <Footer />
+</Layout>
