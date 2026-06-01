@@ -5,7 +5,8 @@
 <div class="fc-root">
 
   <div class="dest-section">
-    <p class="dest-subtitle">Select a route between Australian capital cities to auto-fill the distance, or enter your own below.</p>
+    <p class="dest-subtitle">Select your departure and destination to automatically calculate the distance, or enter a custom distance below.
+</p>
 
     <div class="dest-selector">
       <div class="dest-select-wrap">
@@ -93,6 +94,7 @@
           <input type="number" id="fuelPrice" placeholder="e.g. 2.10" step="0.01" />
           <span class="input-suffix">$/L</span>
         </div>
+     <div class="field-note">Check your vehicle fuel price on <a href="https://myfuelnt.nt.gov.au/">MyFuel NT website</a></div>
       </div>
 
       <div class="field">
@@ -114,7 +116,7 @@
       <div id="resultBody">
         <div class="empty-state">
           <div class="big">
-            <img src="https://a.storyblok.com/f/286255898790625/800x800/bc07a8cec5/car-suv.svg" alt="Car" />
+            <img src="https://a.storyblok.com/f/286255898790625/289x150/eb8230bc99/ute-caravan-blue.svg" alt="Car options" />
           </div>
           <div>Select a vehicle type, enter your trip details and hit Calculate.</div>
         </div>
@@ -124,15 +126,14 @@
   </div>
 </div>
 
-<script is:inline>
-(function () {
+<script is:inline>(function () {
   var cars = [
-    { id: 'small',   name: 'Small / light car',          icon: 'https://a.storyblok.com/f/286255898790625/800x800/ea5e65fa61/car-hatchback-city.svg', effMin: 3.3,  effMax: 7.5,  eg: 'Yaris, Mazda2, Polo' },
-    { id: 'medium',  name: 'Medium car',                 icon: 'https://a.storyblok.com/f/286255898790625/800x800/69b049ceee/sedan-car.svg',           effMin: 4.0,  effMax: 9.0,  eg: 'Camry, Mazda3, Civic' },
-    { id: 'large',   name: 'Large car / people mover',   icon: 'https://a.storyblok.com/f/286255898790625/800x800/48ed265920/van-bus-car.svg',          effMin: 6.5,  effMax: 11.5, eg: 'Kia Stinger, Carnival, Odyssey' },
-    { id: 'suv_sm',  name: 'SUV (small / medium)',       icon: 'https://a.storyblok.com/f/286255898790625/800x800/bc07a8cec5/car-suv.svg',              effMin: 7.0,  effMax: 9.5,  eg: 'CX-5, RAV4, Tucson' },
-    { id: 'suv_lg',  name: 'SUV / ute / truck (large)',  icon: 'https://a.storyblok.com/f/286255898790625/800x800/08f78fc224/truck-pickup-ute-truck.svg',effMin: 7.0,  effMax: 13.5, eg: 'LandCruiser, HiLux, Ranger, Patrol' },
-    { id: 'caravan', name: '4WD + caravan',              icon: 'https://a.storyblok.com/f/286255898790625/800x800/08f78fc224/truck-pickup-ute-truck.svg',effMin: 16.0, effMax: 25.0, eg: 'Towing a van or camper trailer' },
+    { id: 'small',   name: 'Small / light car',          icon: 'https://a.storyblok.com/f/286255898790625/800x800/d0ccec5728/car-hatchback-city-blue.svg', effMin: 3.3,  effMax: 7.5,  eg: 'Yaris, Mazda2, Polo' },
+    { id: 'medium',  name: 'Medium car',                 icon: 'https://a.storyblok.com/f/286255898790625/800x800/1a36cbfddd/sedan-car-blue.svg',           effMin: 4.0,  effMax: 9.0,  eg: 'Camry, Mazda3, Civic' },
+    { id: 'large',   name: 'Large car / people mover',   icon: 'https://a.storyblok.com/f/286255898790625/244x150/4be4d73a83/peoplemover.svg',          effMin: 6.5,  effMax: 11.5, eg: 'Kia Stinger, Carnival, Odyssey' },
+    { id: 'suv_sm',  name: 'SUV (small / medium)',       icon: 'https://a.storyblok.com/f/286255898790625/800x800/b1daa860ea/car-suv-blue.svg',              effMin: 7.0,  effMax: 9.5,  eg: 'CX-5, RAV4, Tucson' },
+    { id: 'suv_lg',  name: 'SUV / ute / truck (large)',  icon: 'https://a.storyblok.com/f/286255898790625/299x150/6ce7a77ac8/rusty-ute-blue.svg',effMin: 7.0,  effMax: 13.5, eg: 'LandCruiser, HiLux, Ranger, Patrol' },
+    { id: 'caravan', name: '4WD + caravan',              icon: 'https://a.storyblok.com/f/286255898790625/289x150/eb8230bc99/ute-caravan-blue.svg',effMin: 16.0, effMax: 25.0, eg: 'Ute Towing a van or camper trailer' },
   ];
 
   var DIST = {

@@ -389,17 +389,31 @@ main {
 }
 
 /* ===== VEHICLE GRID ===== */
+/* ===== VEHICLE GRID ===== */
+
+@media (max-width: 768px) {
+  .car-grid {
+   display: flex;
+    flex-direction: column;
+   gap: 10px;
+  }
+}
+
+
+@media (min-width: 769px)
+ {
 .car-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
-
+}
+ 
 .car-option {
   background: var(--grey-10);
   border: 2px solid transparent;
   border-radius: 14px;
-  padding: 14px 12px;
+  padding: 20px 0px 10px 0px;
   cursor: pointer;
   transition: border-color .18s, background .18s, transform .12s;
   display: flex;
@@ -408,7 +422,7 @@ main {
   gap: 6px;
   text-align: center;
 }
-
+ 
 .car-option:hover {
   border-color: var(--brand-blue);
   background: var(--tints-blue-10);
@@ -430,9 +444,27 @@ main {
 }
 
 .car-icon-svg {
-  width: 50px;
-  height: 50px;
+  width: 100px;
+  height: 70px;
   object-fit: contain;
+}
+
+// animated SVG 
+
+css.car-icon-svg {
+  animation: bumpy 1.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes bumpy {
+  0%   { transform: translateY(0)    rotate(0deg);   }
+  15%  { transform: translateY(-4px) rotate(-1deg);  }
+  30%  { transform: translateY(-2px) rotate(1deg);   }
+  45%  { transform: translateY(-5px) rotate(-0.5deg);}
+  60%  { transform: translateY(-2px) rotate(0.8deg); }
+  75%  { transform: translateY(-3px) rotate(-0.8deg);}
+  90%  { transform: translateY(-1px) rotate(0.5deg); }
+  100% { transform: translateY(0)    rotate(0deg);   }
 }
 
 .car-icon-emoji {
@@ -440,6 +472,28 @@ main {
   align-items: center;
   justify-content: center;
 }
+
+.car-option .car-icon-svg {
+  transition: transform 0.2s ease;
+}
+
+.car-option:hover .car-icon-svg,
+.car-option.selected .car-icon-svg {
+  animation: bumpy 1.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes bumpy {
+  0%   { transform: translateY(0)    rotate(0deg);   }
+  15%  { transform: translateY(-4px) rotate(-1deg);  }
+  30%  { transform: translateY(-2px) rotate(1deg);   }
+  45%  { transform: translateY(-5px) rotate(-0.5deg);}
+  60%  { transform: translateY(-2px) rotate(0.8deg); }
+  75%  { transform: translateY(-3px) rotate(-0.8deg);}
+  90%  { transform: translateY(-1px) rotate(0.5deg); }
+  100% { transform: translateY(0)    rotate(0deg);   }
+}
+
 
 .car-name {
   font-size: 11px;
