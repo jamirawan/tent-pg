@@ -5,8 +5,7 @@
 <div class="fc-root">
 
   <div class="dest-section">
-    <p class="dest-subtitle">Select your departure and destination to automatically calculate the distance, or enter a custom distance below.
-</p>
+    <p class="dest-subtitle">Select your departure and destination to automatically calculate the distance, or enter a custom distance below.</p>
 
     <div class="dest-selector">
       <div class="dest-select-wrap">
@@ -35,13 +34,6 @@
         <span class="dest-label">To</span>
         <select id="destTo" class="dest-select">
           <option value="">Select city</option>
-          <!-- <option value="SYD">Sydney</option>
-          <option value="MEL">Melbourne</option>
-          <option value="BNE">Brisbane</option>
-          <option value="PER">Perth</option>
-          <option value="ADL">Adelaide</option>
-          <option value="CBR">Canberra</option>
-          <option value="HBA">Hobart</option> -->
           <option value="DRW">Darwin</option>
           <option value="ASP">Alice Springs</option>
           <option value="NHU">Nhulunbuy</option>
@@ -66,6 +58,18 @@
     <div class="dest-info-strip" id="destInfoStrip">
       <span>📍</span>
       <span id="destInfoText"></span>
+    </div>
+
+    <!-- Map -->
+    <div class="route-map-wrap" id="routeMapWrap">
+      <iframe
+        id="routeMap"
+        class="route-map"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen
+        loading="lazy"
+        src=""
+      ></iframe>
     </div>
   </div>
 
@@ -94,7 +98,7 @@
           <input type="number" id="fuelPrice" placeholder="e.g. 2.10" step="0.01" />
           <span class="input-suffix">$/L</span>
         </div>
-     <div class="field-note">Check your vehicle fuel price on <a href="https://myfuelnt.nt.gov.au/">MyFuel NT website</a></div>
+        <div class="field-note">Check your vehicle fuel price on <a href="https://myfuelnt.nt.gov.au/">MyFuel NT website</a></div>
       </div>
 
       <div class="field">
@@ -126,14 +130,69 @@
   </div>
 </div>
 
-<script is:inline>(function () {
+<style>
+  .route-map-wrap {
+    display: none;
+    margin-top: 16px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--grey-25);
+    box-shadow: var(--shadow-md);
+    position: relative;
+  }
+
+  .route-map-wrap.visible {
+    display: block;
+  }
+
+  .route-map {
+    width: 100%;
+    height: 340px;
+    border: none;
+    display: block;
+  }
+
+  .route-map-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--grey-10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--grey-50);
+    gap: 8px;
+  }
+
+  .route-map-loading::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--grey-25);
+    border-top-color: var(--brand-blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 600px) {
+    .route-map { height: 240px; }
+  }
+</style>
+
+<script is:inline>
+(function () {
   var cars = [
     { id: 'small',   name: 'Small / light car',          icon: 'https://a.storyblok.com/f/286255898790625/800x800/d0ccec5728/car-hatchback-city-blue.svg', effMin: 3.3,  effMax: 7.5,  eg: 'Yaris, Mazda2, Polo' },
     { id: 'medium',  name: 'Medium car',                 icon: 'https://a.storyblok.com/f/286255898790625/800x800/1a36cbfddd/sedan-car-blue.svg',           effMin: 4.0,  effMax: 9.0,  eg: 'Camry, Mazda3, Civic' },
-    { id: 'large',   name: 'Large car / people mover',   icon: 'https://a.storyblok.com/f/286255898790625/244x150/4be4d73a83/peoplemover.svg',          effMin: 6.5,  effMax: 11.5, eg: 'Kia Stinger, Carnival, Odyssey' },
-    { id: 'suv_sm',  name: 'SUV (small / medium)',       icon: 'https://a.storyblok.com/f/286255898790625/800x800/b1daa860ea/car-suv-blue.svg',              effMin: 7.0,  effMax: 9.5,  eg: 'CX-5, RAV4, Tucson' },
-    { id: 'suv_lg',  name: 'SUV / ute / truck (large)',  icon: 'https://a.storyblok.com/f/286255898790625/299x150/6ce7a77ac8/rusty-ute-blue.svg',effMin: 7.0,  effMax: 13.5, eg: 'LandCruiser, HiLux, Ranger, Patrol' },
-    { id: 'caravan', name: '4WD + caravan',              icon: 'https://a.storyblok.com/f/286255898790625/289x150/eb8230bc99/ute-caravan-blue.svg',effMin: 16.0, effMax: 25.0, eg: 'Ute Towing a van or camper trailer' },
+    { id: 'large',   name: 'Large car / people mover',   icon: 'https://a.storyblok.com/f/286255898790625/244x150/4be4d73a83/peoplemover.svg',             effMin: 6.5,  effMax: 11.5, eg: 'Kia Stinger, Carnival, Odyssey' },
+    { id: 'suv_sm',  name: 'SUV (small / medium)',       icon: 'https://a.storyblok.com/f/286255898790625/800x800/b1daa860ea/car-suv-blue.svg',             effMin: 7.0,  effMax: 9.5,  eg: 'CX-5, RAV4, Tucson' },
+    { id: 'suv_lg',  name: 'SUV / ute / truck (large)',  icon: 'https://a.storyblok.com/f/286255898790625/299x150/6ce7a77ac8/rusty-ute-blue.svg',          effMin: 7.0,  effMax: 13.5, eg: 'LandCruiser, HiLux, Ranger, Patrol' },
+    { id: 'caravan', name: '4WD + caravan',              icon: 'https://a.storyblok.com/f/286255898790625/289x150/eb8230bc99/ute-caravan-blue.svg',         effMin: 16.0, effMax: 25.0, eg: 'Ute Towing a van or camper trailer' },
   ];
 
   var DIST = {
@@ -152,12 +211,20 @@
   };
 
   var CITY_NAMES = {
+    SYD:'Sydney, NSW', MEL:'Melbourne, VIC', BNE:'Brisbane, QLD', PER:'Perth, WA',
+    ADL:'Adelaide, SA', CBR:'Canberra, ACT', HBA:'Hobart, TAS', DRW:'Darwin, NT',
+    ASP:'Alice Springs, NT', NHU:'Nhulunbuy, NT', KTR:'Katherine, NT', ULU:'Uluru, NT',
+  };
+
+  // Short names for display
+  var CITY_SHORT = {
     SYD:'Sydney', MEL:'Melbourne', BNE:'Brisbane', PER:'Perth',
     ADL:'Adelaide', CBR:'Canberra', HBA:'Hobart', DRW:'Darwin',
     ASP:'Alice Springs', NHU:'Nhulunbuy', KTR:'Katherine', ULU:'Uluru',
   };
 
   var selectedCar = null;
+  var MAP_API_KEY = 'AIzaSyCLtQQ_r_Rg6Jsgptu-hz-C_Nldz9xxZnI'; // 🔑 Replace with your key
 
   function getTripType() {
     var radios = document.querySelectorAll('input[name="trip-type"]');
@@ -165,6 +232,26 @@
       if (radios[i].checked) return radios[i].value;
     }
     return 'one-way';
+  }
+
+  function updateMap(from, to) {
+    var wrap = document.getElementById('routeMapWrap');
+    var iframe = document.getElementById('routeMap');
+    if (!from || !to || from === to) {
+      wrap.classList.remove('visible');
+      iframe.src = '';
+      return;
+    }
+    var origin = encodeURIComponent(CITY_NAMES[from]);
+    var destination = encodeURIComponent(CITY_NAMES[to]);
+    var src = 'https://www.google.com/maps/embed/v1/directions'
+      + '?key=' + MAP_API_KEY
+      + '&origin=' + origin
+      + '&destination=' + destination
+      + '&mode=driving'
+      + '&region=au';
+    iframe.src = src;
+    wrap.classList.add('visible');
   }
 
   function renderCars() {
@@ -210,12 +297,14 @@
     var distInput = document.getElementById('distance');
     var tripType = getTripType();
 
+    updateMap(from, to);
+
     if (from && to && from !== to && DIST[from] && DIST[from][to]) {
       var km = DIST[from][to];
       var totalKm = tripType === 'return' ? km * 2 : km;
       var returnLabel = tripType === 'return' ? ' (Return)' : '';
       strip.classList.add('visible');
-      text.innerHTML = '<strong>' + CITY_NAMES[from] + '</strong> to <strong>' + CITY_NAMES[to] + '</strong>' + returnLabel +
+      text.innerHTML = '<strong>' + CITY_SHORT[from] + '</strong> to <strong>' + CITY_SHORT[to] + '</strong>' + returnLabel +
         ' — approximately <strong>' + totalKm.toLocaleString() + ' km</strong> by road.';
       distInput.value = totalKm;
       updateDistanceNote();
@@ -275,8 +364,8 @@
     var hasRoute = from && to && from !== to && DIST[from] && DIST[from][to];
     var routeStr = hasRoute
       ? (tripType === 'return'
-          ? CITY_NAMES[from] + ' → ' + CITY_NAMES[to] + ' → ' + CITY_NAMES[from]
-          : CITY_NAMES[from] + ' → ' + CITY_NAMES[to])
+          ? CITY_SHORT[from] + ' → ' + CITY_SHORT[to] + ' → ' + CITY_SHORT[from]
+          : CITY_SHORT[from] + ' → ' + CITY_SHORT[to])
       : totalDist.toLocaleString() + ' km';
 
     var costLo, costHi, litersLo, litersHi, effLo, effHi;
