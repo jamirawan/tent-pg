@@ -1,8 +1,21 @@
 ---
 // FlydiDect.astro
 ---
-<div class="direct-flight">
- <div class="hero__content">
+<section class="flights" id="flights-section">
+  <div class="hero__overlay">
+    <img
+  sizes="(min-width: 374.98px) 100vw, (min-width: 479.98px) 100vw, (min-width: 749.98px) 100vw, (min-width: 767.98px) 100vw, (min-width: 959.98px) 100vw, (min-width: 1282.98px) 100vw, (min-width: 1919.98px) 100vw"
+  srcset="https://img2.storyblok.com/375x600/filters:format(webp):quality(70)/f/286255898790625/2311x1731/4e71f643b6/uluru-kata_tjuta_signature_walk-aerial-view.jpg 375w, https://img2.storyblok.com/480x800/filters:format(webp):quality(70)/f/286255898790625/2311x1731/4e71f643b6/uluru-kata_tjuta_signature_walk-aerial-view.jpg 480w, https://img2.storyblok.com/750x1200/filters:format(webp):quality(70)/f/286255898790625/2311x1731/4e71f643b6/uluru-kata_tjuta_signature_walk-aerial-view.jpg 750w, https://img2.storyblok.com/768x800/filters:format(webp):quality(70)/f/286255898790625/2311x1731/4e71f643b6/uluru-kata_tjuta_signature_walk-aerial-view.jpg 768w, https://img2.storyblok.com/960x1600/filters:format(webp):quality(70)/f/286255898790625/2311x1731/4e71f643b6/uluru-kata_tjuta_signature_walk-aerial-view.jpg 960w, https://img2.storyblok.com/1283x800/filters:format(webp):quality(70)/f/286255898790625/2311x1731/4e71f643b6/uluru-kata_tjuta_signature_walk-aerial-view.jpg 1283w, https://img2.storyblok.com/1920x1200/filters:format(webp):quality(70)/f/286255898790625/2311x1731/4e71f643b6/uluru-kata_tjuta_signature_walk-aerial-view.jpg 1920w"
+  src="https://img2.storyblok.com/48x20/filters:quality(70)/f/286255898790625/2311x1731/4e71f643b6/uluru-kata_tjuta_signature_walk-aerial-view.jpg"
+  alt=""
+  class="scrollytelling__slide__image__image"
+  loading="lazy"
+  decoding="async"
+  fetchpriority="low"
+>
+  </div>
+
+  <div class="hero__content">
     <h2 id="flights-header" style="font-size:2.5rem;padding:50px; color: white;"> Fly direct to the NT</h2>
 
     <div>
@@ -27,7 +40,7 @@
       </div>
     </div>
   </div>
-</div>
+</section>
 <script is:inline>
 (function() {
   const hero = document.querySelector('.hero--mask');

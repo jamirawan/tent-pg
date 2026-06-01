@@ -48,7 +48,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
+  height: 80px;
   padding: 0 var(--page-padding);
   max-width: 1848px;
   margin: 0 auto;
@@ -447,6 +447,10 @@ main {
   width: 100px;
   height: 70px;
   object-fit: contain;
+}
+
+#car_caravan .car-icon-svg {
+  width: 150px;
 }
 
 // animated SVG 
@@ -983,11 +987,12 @@ footer {
   gap: 16px;
 }
 
+
 .footer-logo-badge {
-  width: 36px;
+  display: block;
+  width: auto;
   height: 36px;
-  background: radial-gradient(circle at 60% 35%, #e9943e 0%, #dd5d85 60%, #da3832 100%);
-  border-radius: 50%;
+  content: url('https://www.tourismandeventsnt.com.au/themes/custom/tourism_eventsnt/dist/img/tourismnt-logo-white.svg');
 }
 
 /* ===== WAVE FOOTER ===== */
