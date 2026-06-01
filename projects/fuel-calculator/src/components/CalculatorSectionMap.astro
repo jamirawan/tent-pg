@@ -1,0 +1,338 @@
+---
+// FuelCalculator.astro
+---
+
+<div class="fc-root">
+
+  <div class="dest-section">
+    <p class="dest-subtitle">Select your departure and destination to automatically calculate the distance, or enter a custom distance below.
+</p>
+
+    <div class="dest-selector">
+      <div class="dest-select-wrap">
+        <span class="dest-label">From</span>
+        <select id="destFrom" class="dest-select">
+          <option value="">Select city</option>
+          <option value="SYD">Sydney</option>
+          <option value="MEL">Melbourne</option>
+          <option value="BNE">Brisbane</option>
+          <option value="PER">Perth</option>
+          <option value="ADL">Adelaide</option>
+          <option value="CBR">Canberra</option>
+          <option value="HBA">Hobart</option>
+          <option value="DRW">Darwin</option>
+          <option value="ASP">Alice Springs</option>
+          <option value="NHU">Nhulunbuy</option>
+          <option value="KTR">Katherine</option>
+          <option value="ULU">Uluru</option>
+        </select>
+        <span class="dest-select-arrow">▾</span>
+      </div>
+
+      <button class="dest-swap-btn" id="swapBtn" title="Swap cities">⇄</button>
+
+      <div class="dest-select-wrap">
+        <span class="dest-label">To</span>
+        <select id="destTo" class="dest-select">
+          <option value="">Select city</option>
+          <!-- <option value="SYD">Sydney</option>
+          <option value="MEL">Melbourne</option>
+          <option value="BNE">Brisbane</option>
+          <option value="PER">Perth</option>
+          <option value="ADL">Adelaide</option>
+          <option value="CBR">Canberra</option>
+          <option value="HBA">Hobart</option> -->
+          <option value="DRW">Darwin</option>
+          <option value="ASP">Alice Springs</option>
+          <option value="NHU">Nhulunbuy</option>
+          <option value="KTR">Katherine</option>
+          <option value="ULU">Uluru</option>
+        </select>
+        <span class="dest-select-arrow">▾</span>
+      </div>
+
+      <div class="trip-toggle">
+        <label>
+          <input type="radio" name="trip-type" value="one-way" checked />
+          One way
+        </label>
+        <label>
+          <input type="radio" name="trip-type" value="return" />
+          Return trip
+        </label>
+      </div>
+    </div>
+
+    <div class="dest-info-strip" id="destInfoStrip">
+      <span>📍</span>
+      <span id="destInfoText"></span>
+    </div>
+  </div>
+
+  <div class="calc-layout">
+
+    <div class="card">
+      <div class="card-title">Vehicle type</div>
+      <div class="car-grid" id="carGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Estimate your fuel costs</div>
+
+      <div class="field">
+        <label>Distance</label>
+        <div class="input-wrap">
+          <input type="number" id="distance" placeholder="Enter distance (km)" />
+          <span class="input-suffix">km</span>
+        </div>
+        <div class="field-note" id="distanceNote"></div>
+      </div>
+
+      <div class="field">
+        <label>Average fuel price</label>
+        <div class="input-wrap">
+          <input type="number" id="fuelPrice" placeholder="e.g. 2.10" step="0.01" />
+          <span class="input-suffix">$/L</span>
+        </div>
+     <div class="field-note">Check your vehicle fuel price on <a href="https://myfuelnt.nt.gov.au/">MyFuel NT website</a></div>
+      </div>
+
+      <div class="field">
+        <label>
+          Average fuel consumption
+          <span class="label-optional">(override optional)</span>
+        </label>
+        <div class="input-wrap">
+          <input type="number" id="fuelEfficiency" placeholder="L/100km" step="0.1" />
+          <span class="input-suffix">L/100km</span>
+        </div>
+        <div class="eff-note" id="effNote">Select a vehicle type to see its consumption range.</div>
+      </div>
+
+      <button class="calc-btn" id="calcBtn">Calculate →</button>
+    </div>
+
+    <div class="result-card" id="resultCard">
+      <div id="resultBody">
+        <div class="empty-state">
+          <div class="big">
+            <img src="https://a.storyblok.com/f/286255898790625/289x150/eb8230bc99/ute-caravan-blue.svg" alt="Car options" />
+          </div>
+          <div>Select a vehicle type, enter your trip details and hit Calculate.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script is:inline>(function () {
+  var cars = [
+    { id: 'small',   name: 'Small / light car',          icon: 'https://a.storyblok.com/f/286255898790625/800x800/d0ccec5728/car-hatchback-city-blue.svg', effMin: 3.3,  effMax: 7.5,  eg: 'Yaris, Mazda2, Polo' },
+    { id: 'medium',  name: 'Medium car',                 icon: 'https://a.storyblok.com/f/286255898790625/800x800/1a36cbfddd/sedan-car-blue.svg',           effMin: 4.0,  effMax: 9.0,  eg: 'Camry, Mazda3, Civic' },
+    { id: 'large',   name: 'Large car / people mover',   icon: 'https://a.storyblok.com/f/286255898790625/244x150/4be4d73a83/peoplemover.svg',          effMin: 6.5,  effMax: 11.5, eg: 'Kia Stinger, Carnival, Odyssey' },
+    { id: 'suv_sm',  name: 'SUV (small / medium)',       icon: 'https://a.storyblok.com/f/286255898790625/800x800/b1daa860ea/car-suv-blue.svg',              effMin: 7.0,  effMax: 9.5,  eg: 'CX-5, RAV4, Tucson' },
+    { id: 'suv_lg',  name: 'SUV / ute / truck (large)',  icon: 'https://a.storyblok.com/f/286255898790625/299x150/6ce7a77ac8/rusty-ute-blue.svg',effMin: 7.0,  effMax: 13.5, eg: 'LandCruiser, HiLux, Ranger, Patrol' },
+    { id: 'caravan', name: '4WD + caravan',              icon: 'https://a.storyblok.com/f/286255898790625/289x150/eb8230bc99/ute-caravan-blue.svg',effMin: 16.0, effMax: 25.0, eg: 'Ute Towing a van or camper trailer' },
+  ];
+
+  var DIST = {
+    SYD: { MEL:878,  BNE:923,  PER:4016, ADL:1376, CBR:281,  HBA:1160, DRW:3934, ASP:2762, NHU:4553, KTR:3544, ULU:2841 },
+    MEL: { SYD:878,  BNE:1765, PER:3509, ADL:727,  CBR:654,  HBA:597,  DRW:3752, ASP:2255, NHU:4371, KTR:3362, ULU:2303 },
+    BNE: { SYD:923,  MEL:1765, PER:4311, ADL:2045, CBR:1185, HBA:2103, DRW:3426, ASP:2730, NHU:4225, KTR:3217, ULU:3001 },
+    PER: { SYD:4016, MEL:3509, BNE:4311, ADL:2716, CBR:3787, HBA:4106, DRW:4032, ASP:2481, NHU:4950, KTR:3841, ULU:3041 },
+    ADL: { SYD:1376, MEL:727,  BNE:2045, PER:2716, CBR:1188, HBA:1328, DRW:3025, ASP:1528, NHU:3644, KTR:2635, ULU:1602 },
+    CBR: { SYD:281,  MEL:654,  BNE:1185, PER:3787, ADL:1188, HBA:1130, DRW:3955, ASP:2783, NHU:4574, KTR:3565, ULU:2635 },
+    HBA: { SYD:1160, MEL:597,  BNE:2103, PER:4106, ADL:1328, CBR:1130, DRW:4349, ASP:2852, NHU:4968, KTR:3959, ULU:2900 },
+    DRW: { SYD:3934, MEL:3752, BNE:3426, PER:4032, ADL:3025, CBR:3955, HBA:4349, ASP:1497, NHU:1150, KTR:317,  ULU:1964 },
+    ASP: { SYD:2762, MEL:2255, BNE:2730, PER:2481, ADL:1528, CBR:2783, HBA:2852, DRW:1497, NHU:2647, KTR:1180, ULU:450  },
+    NHU: { SYD:4553, MEL:4371, BNE:4225, PER:4950, ADL:3644, CBR:4574, HBA:4968, DRW:1150, ASP:2647, KTR:1467, ULU:2797 },
+    KTR: { SYD:3544, MEL:3362, BNE:3217, PER:3841, ADL:2635, CBR:3565, HBA:3959, DRW:317,  ASP:1180, NHU:1467, ULU:1634 },
+    ULU: { SYD:2841, MEL:2303, BNE:3001, PER:3041, ADL:1602, CBR:2635, HBA:2900, DRW:1964, ASP:450,  NHU:2797, KTR:1634 },
+  };
+
+  var CITY_NAMES = {
+    SYD:'Sydney', MEL:'Melbourne', BNE:'Brisbane', PER:'Perth',
+    ADL:'Adelaide', CBR:'Canberra', HBA:'Hobart', DRW:'Darwin',
+    ASP:'Alice Springs', NHU:'Nhulunbuy', KTR:'Katherine', ULU:'Uluru',
+  };
+
+  var selectedCar = null;
+
+  function getTripType() {
+    var radios = document.querySelectorAll('input[name="trip-type"]');
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked) return radios[i].value;
+    }
+    return 'one-way';
+  }
+
+  function renderCars() {
+    var grid = document.getElementById('carGrid');
+    if (!grid) return;
+    grid.innerHTML = cars.map(function(c) {
+      return '<div class="car-option" id="car_' + c.id + '" data-id="' + c.id + '">' +
+        '<div class="car-icon"><img src="' + c.icon + '" alt="' + c.name + '" class="car-icon-svg" /></div>' +
+        '<div class="car-name">' + c.name + '</div>' +
+        '<div class="car-eff">' + c.effMin + '–' + c.effMax + ' L/100km</div>' +
+        '</div>';
+    }).join('');
+
+    grid.addEventListener('click', function(e) {
+      var opt = e.target.closest('.car-option');
+      if (!opt) return;
+      selectCar(opt.getAttribute('data-id'));
+    });
+  }
+
+  function selectCar(id) {
+    selectedCar = null;
+    for (var i = 0; i < cars.length; i++) {
+      if (cars[i].id === id) { selectedCar = cars[i]; break; }
+    }
+    if (!selectedCar) return;
+    document.querySelectorAll('.car-option').forEach(function(el) { el.classList.remove('selected'); });
+    var el = document.getElementById('car_' + id);
+    if (el) el.classList.add('selected');
+    var note = document.getElementById('effNote');
+    var effInput = document.getElementById('fuelEfficiency');
+    note.innerHTML = 'Typical range for <strong>' + selectedCar.name + '</strong>: ' +
+      selectedCar.effMin + '–' + selectedCar.effMax + ' L/100km (' + selectedCar.eg + '). Edit to override.';
+    effInput.placeholder = selectedCar.effMin + '–' + selectedCar.effMax;
+    effInput.value = '';
+  }
+
+  function onRouteChange() {
+    var from = document.getElementById('destFrom').value;
+    var to   = document.getElementById('destTo').value;
+    var strip = document.getElementById('destInfoStrip');
+    var text  = document.getElementById('destInfoText');
+    var distInput = document.getElementById('distance');
+    var tripType = getTripType();
+
+    if (from && to && from !== to && DIST[from] && DIST[from][to]) {
+      var km = DIST[from][to];
+      var totalKm = tripType === 'return' ? km * 2 : km;
+      var returnLabel = tripType === 'return' ? ' (Return)' : '';
+      strip.classList.add('visible');
+      text.innerHTML = '<strong>' + CITY_NAMES[from] + '</strong> to <strong>' + CITY_NAMES[to] + '</strong>' + returnLabel +
+        ' — approximately <strong>' + totalKm.toLocaleString() + ' km</strong> by road.';
+      distInput.value = totalKm;
+      updateDistanceNote();
+    } else {
+      strip.classList.remove('visible');
+      distInput.value = '';
+      updateDistanceNote();
+    }
+  }
+
+  function swapCities() {
+    var from = document.getElementById('destFrom');
+    var to   = document.getElementById('destTo');
+    var tmp  = from.value;
+    from.value = to.value;
+    to.value   = tmp;
+    onRouteChange();
+  }
+
+  function updateDistanceNote() {
+    var distance = parseFloat(document.getElementById('distance').value);
+    var note = document.getElementById('distanceNote');
+    var tripType = getTripType();
+    note.textContent = (!isNaN(distance) && distance > 0 && tripType === 'return')
+      ? 'Return trip total: ' + distance.toLocaleString() + ' km'
+      : '';
+  }
+
+  function fmt$(n) { return '$' + n.toFixed(0); }
+  function fmtRange$(lo, hi) {
+    if (Math.abs(hi - lo) < 2) return fmt$(Math.round((lo + hi) / 2));
+    return fmt$(lo) + ' – ' + fmt$(hi);
+  }
+  function fmtRangeL(lo, hi) {
+    if (Math.abs(hi - lo) < 2) return Math.round((lo + hi) / 2) + 'L';
+    return Math.round(lo) + '–' + Math.round(hi) + 'L';
+  }
+  function calcCost(distance, fuelPrice, eff) {
+    var liters = (distance / 100) * eff;
+    return { liters: liters, cost: liters * fuelPrice };
+  }
+
+  function calculate() {
+    var tripType    = getTripType();
+    var distance    = parseFloat(document.getElementById('distance').value);
+    var fuelPrice   = parseFloat(document.getElementById('fuelPrice').value);
+    var effOverride = parseFloat(document.getElementById('fuelEfficiency').value);
+
+    if (!selectedCar)               { showError('Please select a vehicle type.'); return; }
+    if (!distance || distance <= 0) { showError('Please enter a valid distance.'); return; }
+    if (!fuelPrice || fuelPrice <= 0) { showError('Please enter a valid fuel price.'); return; }
+
+    var totalDist = distance;
+
+    var from = document.getElementById('destFrom').value;
+    var to   = document.getElementById('destTo').value;
+    var hasRoute = from && to && from !== to && DIST[from] && DIST[from][to];
+    var routeStr = hasRoute
+      ? (tripType === 'return'
+          ? CITY_NAMES[from] + ' → ' + CITY_NAMES[to] + ' → ' + CITY_NAMES[from]
+          : CITY_NAMES[from] + ' → ' + CITY_NAMES[to])
+      : totalDist.toLocaleString() + ' km';
+
+    var costLo, costHi, litersLo, litersHi, effLo, effHi;
+    var useOverride = !isNaN(effOverride) && effOverride > 0;
+
+    if (useOverride) {
+      var r = calcCost(totalDist, fuelPrice, effOverride);
+      costLo = costHi = r.cost;
+      litersLo = litersHi = r.liters;
+      effLo = effHi = effOverride;
+    } else {
+      var lo = calcCost(totalDist, fuelPrice, selectedCar.effMin);
+      var hi = calcCost(totalDist, fuelPrice, selectedCar.effMax);
+      costLo = lo.cost; litersLo = lo.liters;
+      costHi = hi.cost; litersHi = hi.liters;
+      effLo = selectedCar.effMin; effHi = selectedCar.effMax;
+    }
+
+    var costDisplay   = useOverride ? fmt$(costLo)                     : fmtRange$(costLo, costHi);
+    var litersDisplay = useOverride ? Math.round(litersLo) + 'L'       : fmtRangeL(litersLo, litersHi);
+    var effDisplay    = useOverride ? effOverride + ' L/100km (custom)' : effLo + '–' + effHi + ' L/100km';
+
+    document.getElementById('resultBody').innerHTML =
+      '<div class="result-cost-block">' +
+        '<div class="result-cost-label">Estimated fuel cost</div>' +
+        '<div class="result-cost-value">' + costDisplay + '</div>' +
+        '<div class="result-cost-sub">' +
+          '<div class="result-summary-row"><span class="result-summary-label">Route</span><span class="result-summary-value">' + routeStr + '</span></div>' +
+          '<div class="result-summary-row"><span class="result-summary-label">Vehicle</span><span class="result-summary-value">' + selectedCar.name + '</span></div>' +
+          '<div class="result-summary-row"><span class="result-summary-label">Distance</span><span class="result-summary-value">' + totalDist.toLocaleString() + ' km</span></div>' +
+          '<div class="result-summary-row"><span class="result-summary-label">Fuel used</span><span class="result-summary-value">' + litersDisplay + '</span></div>' +
+          '<div class="result-summary-row"><span class="result-summary-label">Consumption</span><span class="result-summary-value">' + effDisplay + '</span></div>' +
+          '<div class="result-summary-row"><span class="result-summary-label">Fuel price</span><span class="result-summary-value">$' + fuelPrice.toFixed(2) + '/L</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<p class="result-disclaimer">* Estimates only. Actual costs vary with driving style, load, road conditions, and fuel stop prices.</p>';
+  }
+
+  function showError(msg) {
+    document.getElementById('resultBody').innerHTML =
+      '<div class="empty-state">' +
+        '<div class="big">⚠️</div>' +
+        '<div>' + msg + '</div>' +
+      '</div>';
+  }
+
+  document.getElementById('destFrom').addEventListener('change', onRouteChange);
+  document.getElementById('destTo').addEventListener('change', onRouteChange);
+  document.getElementById('swapBtn').addEventListener('click', swapCities);
+  document.getElementById('calcBtn').addEventListener('click', calculate);
+  document.getElementById('distance').addEventListener('input', updateDistanceNote);
+  document.querySelectorAll('input[name="trip-type"]').forEach(function(radio) {
+    radio.addEventListener('change', onRouteChange);
+  });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Enter') calculate(); });
+
+  renderCars();
+})();
+</script>
