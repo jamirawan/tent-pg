@@ -924,6 +924,7 @@ footer {
   display: flex;
   gap: 14px;
   margin-top: 16px;
+
 }
 
 .footer-socials a {
@@ -937,6 +938,7 @@ footer {
   text-decoration: none;
   transition: background .2s;
   font-size: 14px;
+  color:white;
 }
 
 .footer-socials a:hover {
