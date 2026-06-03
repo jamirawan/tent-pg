@@ -1416,3 +1416,8 @@ footer {
     letter-spacing: 1.5rem !important;
     text-align: center;
 }
+
+input[type="number"].input-error {
+  border-color: var(--brand-pink);
+  background: var(--tints-pink-10);
+}

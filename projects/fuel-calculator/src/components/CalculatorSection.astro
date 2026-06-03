@@ -154,7 +154,7 @@
   KTR: { SYD:3544, MEL:3362, BNE:3217, PER:3841, ADL:2635, CBR:3565, HBA:3959, DRW:317,  ASP:1180, NHU:1467, ULU:1634, TNK:959,  KAK:562  },
   ULU: { SYD:2841, MEL:2303, BNE:3001, PER:3041, ADL:1602, CBR:2635, HBA:2900, DRW:1964, ASP:450,  NHU:2797, KTR:1634, ULU:0,   TNK:957,  KAK:2209 },
   TNK: { SYD:3027, MEL:2520, BNE:2994, PER:2746, ADL:1793, CBR:3048, HBA:3117, DRW:676,  ASP:507,  NHU:1826, KTR:959,  ULU:957,  KAK:921  },
-  KAK: { SYD:4179, MEL:3997, BNE:3671, PER:4277, ADL:3270, CBR:4200, HBA:4494, DRW:245,  ASP:1742, NHU:1395, KTR:562,  ULU:2209, TNK:921  },
+  KAK: { SYD:3776, MEL:3589, BNE:3258, PER:3822, ADL:3864, CBR:3771, HBA:4303, DRW:245,  ASP:1488, NHU:1034, KTR:309,  ULU:19, TNK:921  },
 };
 
   var CITY_NAMES = {
@@ -266,6 +266,10 @@
   }
 
   function calculate() {
+    // scroll to result Body
+      document.getElementById('resultBody').scrollIntoView(
+      { behavior: 'smooth', block: 'start' }
+    );
     // Clear previous red borders
     document.querySelectorAll('input[type="number"]').forEach(function(inp) {
       inp.style.borderColor = '';
@@ -319,6 +323,7 @@
     var litersDisplay = useOverride ? Math.round(litersLo) + 'L'       : fmtRangeL(litersLo, litersHi);
     var effDisplay    = useOverride ? effOverride + ' L/100km (custom)' : effLo + '–' + effHi + ' L/100km';
 
+    
     document.getElementById('resultBody').innerHTML =
       '<div class="result-cost-block">' +
         '<div class="result-cost-label">Estimated fuel cost</div>' +
