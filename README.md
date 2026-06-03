@@ -53,6 +53,17 @@ npm run preview
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 - **Interactive Components**: Real-time calculations and route information
 
+## Vehicle type efficiency ranges
+
+| ID       | Name                         | Eff Min | Eff Max | Example Vehicles                         |
+|----------|------------------------------|--------:|--------:|------------------------------------------|
+| small    | Small / light car            | 3.3     | 7.5     | Yaris, Mazda2, Polo                      |
+| medium   | Medium car                   | 4.0     | 9.0     | Camry, Mazda3, Civic                     |
+| large    | Large car / people mover     | 6.5     | 11.5    | Kia Stinger, Carnival, Odyssey           |
+| suv_sm   | SUV (small / medium)         | 7.0     | 9.5     | CX-5, RAV4, Tucson                       |
+| suv_lg   | SUV / ute / truck (large)    | 7.0     | 13.5    | LandCruiser, HiLux, Ranger, Patrol       |
+| caravan  | 4WD + caravan                | 16.0    | 25.0    | Ute towing a van or camper trailer       |
+
 ## Distance or route table
 
 | From \ To | SYD | MEL | BNE | PER | ADL | CBR | HBA | DRW | ASP | NHU | KTR | ULU | TNK | KAK |
