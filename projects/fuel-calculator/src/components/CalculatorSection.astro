@@ -25,6 +25,8 @@
           <option value="NHU">Nhulunbuy</option>
           <option value="KTR">Katherine</option>
           <option value="ULU">Uluru</option>
+          <option value="TNK">Tennant Creek</option>
+          <option value="KAK">Kakadu</option>
         </select>
         <span class="dest-select-arrow">▾</span>
       </div>
@@ -47,6 +49,8 @@
           <option value="NHU">Nhulunbuy</option>
           <option value="KTR">Katherine</option>
           <option value="ULU">Uluru</option>
+          <option value="TNK">Tennant Creek</option>
+          <option value="KAK">Kakadu</option>
         </select>
         <span class="dest-select-arrow">▾</span>
       </div>
@@ -136,25 +140,28 @@
     { id: 'caravan', name: '4WD + caravan',              icon: 'https://a.storyblok.com/f/286255898790625/289x150/eb8230bc99/ute-caravan-blue.svg',effMin: 16.0, effMax: 25.0, eg: 'Ute Towing a van or camper trailer' },
   ];
 
-  var DIST = {
-    SYD: { MEL:878,  BNE:923,  PER:4016, ADL:1376, CBR:281,  HBA:1160, DRW:3934, ASP:2762, NHU:4553, KTR:3544, ULU:2841 },
-    MEL: { SYD:878,  BNE:1765, PER:3509, ADL:727,  CBR:654,  HBA:597,  DRW:3752, ASP:2255, NHU:4371, KTR:3362, ULU:2303 },
-    BNE: { SYD:923,  MEL:1765, PER:4311, ADL:2045, CBR:1185, HBA:2103, DRW:3426, ASP:2730, NHU:4225, KTR:3217, ULU:3001 },
-    PER: { SYD:4016, MEL:3509, BNE:4311, ADL:2716, CBR:3787, HBA:4106, DRW:4032, ASP:2481, NHU:4950, KTR:3841, ULU:3041 },
-    ADL: { SYD:1376, MEL:727,  BNE:2045, PER:2716, CBR:1188, HBA:1328, DRW:3025, ASP:1528, NHU:3644, KTR:2635, ULU:1602 },
-    CBR: { SYD:281,  MEL:654,  BNE:1185, PER:3787, ADL:1188, HBA:1130, DRW:3955, ASP:2783, NHU:4574, KTR:3565, ULU:2635 },
-    HBA: { SYD:1160, MEL:597,  BNE:2103, PER:4106, ADL:1328, CBR:1130, DRW:4349, ASP:2852, NHU:4968, KTR:3959, ULU:2900 },
-    DRW: { SYD:3934, MEL:3752, BNE:3426, PER:4032, ADL:3025, CBR:3955, HBA:4349, ASP:1497, NHU:1150, KTR:317,  ULU:1964 },
-    ASP: { SYD:2762, MEL:2255, BNE:2730, PER:2481, ADL:1528, CBR:2783, HBA:2852, DRW:1497, NHU:2647, KTR:1180, ULU:450  },
-    NHU: { SYD:4553, MEL:4371, BNE:4225, PER:4950, ADL:3644, CBR:4574, HBA:4968, DRW:1150, ASP:2647, KTR:1467, ULU:2797 },
-    KTR: { SYD:3544, MEL:3362, BNE:3217, PER:3841, ADL:2635, CBR:3565, HBA:3959, DRW:317,  ASP:1180, NHU:1467, ULU:1634 },
-    ULU: { SYD:2841, MEL:2303, BNE:3001, PER:3041, ADL:1602, CBR:2635, HBA:2900, DRW:1964, ASP:450,  NHU:2797, KTR:1634 },
-  };
+ var DIST = {
+  SYD: { MEL:878,  BNE:923,  PER:4016, ADL:1376, CBR:281,  HBA:1160, DRW:3934, ASP:2762, NHU:4553, KTR:3544, ULU:2841, TNK:3027, KAK:4179 },
+  MEL: { SYD:878,  BNE:1765, PER:3509, ADL:727,  CBR:654,  HBA:597,  DRW:3752, ASP:2255, NHU:4371, KTR:3362, ULU:2303, TNK:2520, KAK:3997 },
+  BNE: { SYD:923,  MEL:1765, PER:4311, ADL:2045, CBR:1185, HBA:2103, DRW:3426, ASP:2730, NHU:4225, KTR:3217, ULU:3001, TNK:2994, KAK:3671 },
+  PER: { SYD:4016, MEL:3509, BNE:4311, ADL:2716, CBR:3787, HBA:4106, DRW:4032, ASP:2481, NHU:4950, KTR:3841, ULU:3041, TNK:2746, KAK:4277 },
+  ADL: { SYD:1376, MEL:727,  BNE:2045, PER:2716, CBR:1188, HBA:1328, DRW:3025, ASP:1528, NHU:3644, KTR:2635, ULU:1602, TNK:1793, KAK:3270 },
+  CBR: { SYD:281,  MEL:654,  BNE:1185, PER:3787, ADL:1188, HBA:1130, DRW:3955, ASP:2783, NHU:4574, KTR:3565, ULU:2635, TNK:3048, KAK:4200 },
+  HBA: { SYD:1160, MEL:597,  BNE:2103, PER:4106, ADL:1328, CBR:1130, DRW:4349, ASP:2852, NHU:4968, KTR:3959, ULU:2900, TNK:3117, KAK:4494 },
+  DRW: { SYD:3934, MEL:3752, BNE:3426, PER:4032, ADL:3025, CBR:3955, HBA:4349, ASP:1497, NHU:1150, KTR:317,  ULU:1964, TNK:676,  KAK:245  },
+  ASP: { SYD:2762, MEL:2255, BNE:2730, PER:2481, ADL:1528, CBR:2783, HBA:2852, DRW:1497, NHU:2647, KTR:1180, ULU:450,  TNK:507,  KAK:1742 },
+  NHU: { SYD:4553, MEL:4371, BNE:4225, PER:4950, ADL:3644, CBR:4574, HBA:4968, DRW:1150, ASP:2647, KTR:1467, ULU:2797, TNK:1826, KAK:1395 },
+  KTR: { SYD:3544, MEL:3362, BNE:3217, PER:3841, ADL:2635, CBR:3565, HBA:3959, DRW:317,  ASP:1180, NHU:1467, ULU:1634, TNK:959,  KAK:562  },
+  ULU: { SYD:2841, MEL:2303, BNE:3001, PER:3041, ADL:1602, CBR:2635, HBA:2900, DRW:1964, ASP:450,  NHU:2797, KTR:1634, ULU:0,   TNK:957,  KAK:2209 },
+  TNK: { SYD:3027, MEL:2520, BNE:2994, PER:2746, ADL:1793, CBR:3048, HBA:3117, DRW:676,  ASP:507,  NHU:1826, KTR:959,  ULU:957,  KAK:921  },
+  KAK: { SYD:4179, MEL:3997, BNE:3671, PER:4277, ADL:3270, CBR:4200, HBA:4494, DRW:245,  ASP:1742, NHU:1395, KTR:562,  ULU:2209, TNK:921  },
+};
 
   var CITY_NAMES = {
     SYD:'Sydney', MEL:'Melbourne', BNE:'Brisbane', PER:'Perth',
     ADL:'Adelaide', CBR:'Canberra', HBA:'Hobart', DRW:'Darwin',
     ASP:'Alice Springs', NHU:'Nhulunbuy', KTR:'Katherine', ULU:'Uluru',
+    TNK: 'Tennant Creek', KAK: 'Kakadu',
   };
 
   var selectedCar = null;
@@ -259,14 +266,27 @@
   }
 
   function calculate() {
+    // Clear previous red borders
+    document.querySelectorAll('input[type="number"]').forEach(function(inp) {
+      inp.style.borderColor = '';
+    });
+
     var tripType    = getTripType();
     var distance    = parseFloat(document.getElementById('distance').value);
     var fuelPrice   = parseFloat(document.getElementById('fuelPrice').value);
     var effOverride = parseFloat(document.getElementById('fuelEfficiency').value);
 
     if (!selectedCar)               { showError('Please select a vehicle type.'); return; }
-    if (!distance || distance <= 0) { showError('Please enter a valid distance.'); return; }
-    if (!fuelPrice || fuelPrice <= 0) { showError('Please enter a valid fuel price.'); return; }
+    if (!distance || distance <= 0) {
+      document.getElementById('distance').style.borderColor = 'red';
+      showError('Please enter a valid distance.');
+      return;
+    }
+    if (!fuelPrice || fuelPrice <= 0) {
+      document.getElementById('fuelPrice').style.borderColor = 'red';
+      showError('Please enter a valid fuel price.');
+      return;
+    }
 
     var totalDist = distance;
 
@@ -331,6 +351,14 @@
   document.querySelectorAll('input[name="trip-type"]').forEach(function(radio) {
     radio.addEventListener('change', onRouteChange);
   });
+
+  // Clear red border on input
+  document.querySelectorAll('input[type="number"]').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      inp.style.borderColor = '';
+    });
+  });
+
   document.addEventListener('keydown', function(e) { if (e.key === 'Enter') calculate(); });
 
   renderCars();
