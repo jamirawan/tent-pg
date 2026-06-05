@@ -26,7 +26,7 @@ const { height = '500px' } = Astro.props;
   import 'leaflet/dist/leaflet.css';
 
   async function fetchStations() {
-    const res = await fetch('/data/petrol-stations.geojson');
+    const res = await fetch('/public/data/petrol-stations.geojson');
     if (!res.ok) throw new Error(`Failed to load GeoJSON: ${res.status}`);
     return res.json();
   }
