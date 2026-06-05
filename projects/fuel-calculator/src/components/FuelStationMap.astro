@@ -1,0 +1,84 @@
+---
+// src/components/FuelStationMap.astro
+
+interface Props {
+  height?: string;
+}
+
+const { height = '500px' } = Astro.props;
+---
+
+<div
+  id="fuel-station-map"
+  style={`height: ${height}; width: 100%; border-radius: 8px;`}
+></div>
+
+<style>
+  /* Prevent Leaflet tiles from being clipped by CSS stacking contexts */
+  #fuel-station-map {
+    z-index: 0;
+    position: relative;
+  }
+</style>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  async function fetchStations() {
+    const res = await fetch('/data/petrol-stations.geojson');
+    if (!res.ok) throw new Error(`Failed to load GeoJSON: ${res.status}`);
+    return res.json();
+  }
+
+  async function init() {
+    const el = document.getElementById('fuel-station-map') as HTMLElement;
+
+    // NT centre
+    const map = L.map(el).setView([-19.5, 133.0], 6);
+
+    // OSM basemap — no API key required
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | ' +
+        '© Commonwealth of Australia (Geoscience Australia) 2022',
+      maxZoom: 18,
+    }).addTo(map);
+
+    try {
+      const geojson = await fetchStations();
+      console.log('Fetched GeoJSON:', geojson);
+
+      L.geoJSON(geojson, {
+        pointToLayer: (_feature, latlng) =>
+          L.circleMarker(latlng, {
+            radius: 7,
+            fillColor: '#e66300',  // NT Tourism orange
+            color: '#1f1f5f',      // NT Tourism navy
+            weight: 1.5,
+            opacity: 1,
+            fillOpacity: 0.9,
+          }),
+
+        onEachFeature: (feature, layer) => {
+          const p = feature.properties;
+          const name = p.station_name ?? 'Fuel Station';
+          const owner = p.station_owner ? `<em>${p.station_owner}</em><br>` : '';
+          const address = [p.station_address, p.station_suburb, p.station_state, p.station_postcode]
+            .filter(Boolean)
+            .join(', ');
+
+          layer.bindPopup(
+            `<strong>${name}</strong><br>${owner}${address}`,
+            { maxWidth: 250 }
+          );
+        },
+      }).addTo(map);
+
+    } catch (err) {
+      console.error('Failed to load fuel stations:', err);
+    }
+  }
+
+  init();
+</script>
