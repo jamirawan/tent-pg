@@ -8,8 +8,6 @@ interface Props {
 const { height = '600px' } = Astro.props;
 ---
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
 <div class="psnt-wrapper" style={`height: ${height}`}>
 
   <header class="psnt-header">
@@ -292,7 +290,15 @@ const { height = '600px' } = Astro.props;
 </style>
 
 <script>
-  function initMap() {
+  // Dynamically load Leaflet so it works in Astro's ES module environment
+  const leafletCSS = document.createElement('link');
+  leafletCSS.rel = 'stylesheet';
+  leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(leafletCSS);
+
+  const leafletJS = document.createElement('script');
+  leafletJS.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  leafletJS.onload = function () {
     const API_URL =
       'https://services.ga.gov.au/gis/rest/services/Liquid_Fuel_Facilities/MapServer/3/query' +
       '?f=json&where=(station_state%20IN%20(%27NT%27))&outFields=*&resultRecordCount=1000';
@@ -466,7 +472,6 @@ const { height = '600px' } = Astro.props;
           '<div class="psnt-loading-text" style="color:#ff6b6b">Failed to load stations</div>';
         console.error(err);
       });
-  }
+  };
+  document.head.appendChild(leafletJS);
 </script>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onload="initMap()"></script>
