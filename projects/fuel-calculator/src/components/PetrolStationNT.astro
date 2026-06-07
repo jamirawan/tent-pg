@@ -1,0 +1,472 @@
+---
+// src/components/PetrolStationNT.astro
+
+interface Props {
+  height?: string;
+}
+
+const { height = '600px' } = Astro.props;
+---
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<div class="psnt-wrapper" style={`height: ${height}`}>
+
+  <header class="psnt-header">
+    <div class="psnt-header-title">Northern Territory &mdash; <span>Fuel Stations</span></div>
+    <div class="psnt-header-count" id="psnt-header-count">Loading&hellip;</div>
+  </header>
+
+  <aside class="psnt-sidebar">
+    <div class="psnt-search-bar">
+      <input type="text" id="psnt-search-input" placeholder="Search by name, suburb or owner&hellip;" />
+    </div>
+    <div class="psnt-suburb-dropdown">
+      <select id="psnt-suburb-select">
+        <option value="ALL">All Suburbs</option>
+      </select>
+    </div>
+    <div class="psnt-filter-bar" id="psnt-filter-bar">
+      <button class="psnt-filter-btn active" data-owner="ALL">All</button>
+    </div>
+    <div class="psnt-station-list" id="psnt-station-list"></div>
+  </aside>
+
+  <div class="psnt-map-container">
+    <div class="psnt-loading" id="psnt-loading">
+      <div class="psnt-loading-dots">
+        <span class="psnt-loading-dot"></span>
+        <span class="psnt-loading-dot"></span>
+        <span class="psnt-loading-dot"></span>
+      </div>
+      <div class="psnt-loading-text">Loading fuel stations&hellip;</div>
+    </div>
+    <div id="psnt-fuel-map"></div>
+  </div>
+
+</div>
+
+<style>
+  .psnt-wrapper {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(31,31,95,0.12);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #1f1f5f;
+  }
+
+  /* Header */
+  .psnt-header {
+    grid-column: 1 / -1;
+    background: #1f1f5f;
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 3px solid #e66300;
+  }
+
+  .psnt-header-title {
+    font-size: 1.1rem;
+    font-weight: normal;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .psnt-header-title span {
+    color: #e66300;
+    font-weight: bold;
+  }
+
+  .psnt-header-count {
+    margin-left: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.05em;
+  }
+
+  /* Sidebar */
+  .psnt-sidebar {
+    background: white;
+    border-right: 1px solid #e0ddd6;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .psnt-search-bar {
+    padding: 12px;
+    border-bottom: 1px solid #e0ddd6;
+  }
+
+  .psnt-search-bar input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0ddd6;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: #1f1f5f;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .psnt-search-bar input:focus {
+    border-color: #e66300;
+  }
+
+  .psnt-suburb-dropdown {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0ddd6;
+  }
+
+  .psnt-suburb-dropdown select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0ddd6;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: #1f1f5f;
+    background: white;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231f1f5f' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+
+  .psnt-suburb-dropdown select:focus {
+    border-color: #e66300;
+  }
+
+  .psnt-filter-bar {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0ddd6;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .psnt-filter-btn {
+    padding: 4px 10px;
+    border: 1px solid #e0ddd6;
+    border-radius: 20px;
+    background: white;
+    font-size: 0.75rem;
+    font-family: inherit;
+    color: #1f1f5f;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .psnt-filter-btn:hover,
+  .psnt-filter-btn.active {
+    background: #e66300;
+    border-color: #e66300;
+    color: white;
+  }
+
+  .psnt-station-list {
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .psnt-station-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0ddd6;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .psnt-station-item:hover {
+    background: #fdf6f1;
+  }
+
+  .psnt-station-item.active {
+    background: #fdf6f1;
+    border-left: 3px solid #e66300;
+  }
+
+  .psnt-station-name {
+    font-size: 0.88rem;
+    font-weight: bold;
+    color: #1f1f5f;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .psnt-station-owner {
+    font-size: 0.78rem;
+    color: #e66300;
+    font-style: italic;
+  }
+
+  .psnt-station-address {
+    font-size: 0.75rem;
+    color: #777;
+  }
+
+  .psnt-no-results {
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #999;
+    font-style: italic;
+  }
+
+  /* Map */
+  #psnt-fuel-map {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Loading overlay */
+  .psnt-loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(31,31,95,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: Georgia, serif;
+    z-index: 1000;
+    gap: 12px;
+  }
+
+  .psnt-loading-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e66300;
+    display: inline-block;
+    animation: psnt-pulse 1.2s ease-in-out infinite;
+  }
+
+  .psnt-loading-dot:nth-child(2) { animation-delay: 0.2s; background: white; }
+  .psnt-loading-dot:nth-child(3) { animation-delay: 0.4s; background: #db0c67; }
+
+  @keyframes psnt-pulse {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+    40%           { transform: scale(1);   opacity: 1; }
+  }
+
+  .psnt-loading-dots { display: flex; gap: 8px; }
+
+  .psnt-loading-text {
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  /* Map container */
+  .psnt-map-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Leaflet popup overrides */
+  :global(.leaflet-popup-content-wrapper) {
+    border-radius: 4px;
+    border-top: 3px solid #e66300;
+    font-family: Georgia, serif;
+  }
+
+  :global(.psnt-popup-name)    { font-weight: bold; color: #1f1f5f; font-size: 0.9rem; text-transform: uppercase; }
+  :global(.psnt-popup-owner)   { color: #e66300; font-style: italic; font-size: 0.82rem; margin: 2px 0; }
+  :global(.psnt-popup-address) { color: #555; font-size: 0.8rem; }
+  :global(.psnt-popup-status)  { display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; background: #e8f5e9; color: #2e7d32; }
+</style>
+
+<script>
+  function initMap() {
+    const API_URL =
+      'https://services.ga.gov.au/gis/rest/services/Liquid_Fuel_Facilities/MapServer/3/query' +
+      '?f=json&where=(station_state%20IN%20(%27NT%27))&outFields=*&resultRecordCount=1000';
+
+    const map = L.map('psnt-fuel-map').setView([-19.5, 133.0], 6);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
+        '© <a href="https://carto.com/">CARTO</a> | © Geoscience Australia 2022',
+      maxZoom: 18,
+    }).addTo(map);
+
+    let allStations: any[] = [];
+    const markers: Record<number, any> = {};
+    let activeOwner = 'ALL';
+    let activeSuburb = 'ALL';
+    let searchQuery = '';
+    let activeItem: Element | null = null;
+
+    function buildMarkerIcon(owner: string) {
+      const colors: Record<string, string> = {
+        'BP':              '#007a33',
+        'SHELL':           '#fbce07',
+        'CALTEX':          '#e30613',
+        'AMPOL':           '#e30613',
+        'UNITED':          '#0057a8',
+        '7-ELEVEN PTY LTD':'#ff6600',
+      };
+      const bg = colors[owner] || '#e66300';
+      return L.divIcon({
+        className: '',
+        html: `<div style="width:12px;height:12px;border-radius:50%;background:${bg};border:2px solid #1f1f5f;box-shadow:0 1px 4px rgba(0,0,0,0.35);"></div>`,
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+      });
+    }
+
+    function renderList(stations: any[]) {
+      const list = document.getElementById('psnt-station-list')!;
+      if (!stations.length) {
+        list.innerHTML = '<div class="psnt-no-results">No stations found.</div>';
+        return;
+      }
+      list.innerHTML = stations.map((s) => {
+        const a = s.attributes;
+        const addr = [a.station_address, a.station_suburb, a.station_postcode].filter(Boolean).join(', ');
+        return (
+          `<div class="psnt-station-item" data-idx="${s._idx}">` +
+            `<div class="psnt-station-name">${a.station_name || 'Fuel Station'}</div>` +
+            `<div class="psnt-station-owner">${a.station_owner || ''}</div>` +
+            `<div class="psnt-station-address">${addr}</div>` +
+          `</div>`
+        );
+      }).join('');
+
+      list.querySelectorAll('.psnt-station-item').forEach((el) => {
+        el.addEventListener('click', () => {
+          selectStation(parseInt(el.getAttribute('data-idx')!));
+        });
+      });
+    }
+
+    function selectStation(idx: number) {
+      const station = allStations[idx];
+      if (!station?.geometry) return;
+
+      if (activeItem) activeItem.classList.remove('active');
+      const el = document.querySelector(`.psnt-station-item[data-idx="${idx}"]`);
+      if (el) {
+        el.classList.add('active');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        activeItem = el;
+      }
+
+      map.setView([station.geometry.y, station.geometry.x], 13, { animate: true });
+      if (markers[idx]) markers[idx].openPopup();
+    }
+
+    function filterStations() {
+      return allStations.filter((s) => {
+        const a = s.attributes;
+        const matchOwner  = activeOwner  === 'ALL' || a.station_owner  === activeOwner;
+        const matchSuburb = activeSuburb === 'ALL' || a.station_suburb === activeSuburb;
+        const q = searchQuery.toLowerCase();
+        const matchSearch = !q ||
+          (a.station_name   || '').toLowerCase().includes(q) ||
+          (a.station_suburb || '').toLowerCase().includes(q) ||
+          (a.station_owner  || '').toLowerCase().includes(q);
+        return matchOwner && matchSuburb && matchSearch;
+      });
+    }
+
+    function applyFilters() {
+      const filtered = filterStations();
+      allStations.forEach((s) => { if (markers[s._idx]) map.removeLayer(markers[s._idx]); });
+      filtered.forEach((s)    => { if (markers[s._idx]) markers[s._idx].addTo(map); });
+      renderList(filtered);
+      document.getElementById('psnt-header-count')!.textContent = `${filtered.length} stations`;
+    }
+
+    function buildFilters(stations: any[]) {
+      // Suburb dropdown
+      const suburbs = [...new Set(stations.map((s) => s.attributes.station_suburb).filter(Boolean))].sort() as string[];
+      const select = document.getElementById('psnt-suburb-select') as HTMLSelectElement;
+      suburbs.forEach((suburb) => {
+        const opt = document.createElement('option');
+        opt.value = suburb;
+        opt.textContent = suburb;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change', () => { activeSuburb = select.value; applyFilters(); });
+
+      // Owner filter buttons
+      const owners = [...new Set(stations.map((s) => s.attributes.station_owner).filter(Boolean))].sort() as string[];
+      const bar = document.getElementById('psnt-filter-bar')!;
+      owners.forEach((owner) => {
+        const btn = document.createElement('button');
+        btn.className = 'psnt-filter-btn';
+        btn.setAttribute('data-owner', owner);
+        btn.textContent = owner.replace(' PTY LTD', '');
+        bar.appendChild(btn);
+      });
+      bar.addEventListener('click', (e) => {
+        const btn = (e.target as Element).closest('.psnt-filter-btn') as HTMLElement | null;
+        if (!btn) return;
+        bar.querySelectorAll('.psnt-filter-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeOwner = btn.getAttribute('data-owner')!;
+        applyFilters();
+      });
+    }
+
+    document.getElementById('psnt-search-input')!.addEventListener('input', (e) => {
+      searchQuery = (e.target as HTMLInputElement).value;
+      applyFilters();
+    });
+
+    fetch(API_URL)
+      .then((r) => r.json())
+      .then((data) => {
+        document.getElementById('psnt-loading')!.style.display = 'none';
+
+        allStations = (data.features || []).map((f: any, i: number) => { f._idx = i; return f; });
+
+        allStations.forEach((s) => {
+          if (!s.geometry) return;
+          const a = s.attributes;
+          const name   = a.station_name || 'Fuel Station';
+          const owner  = a.station_owner || '';
+          const addr   = [a.station_address, a.station_suburb, a.station_postcode].filter(Boolean).join(', ');
+          const status = a.operational_status || '';
+
+          const marker = L.marker([s.geometry.y, s.geometry.x], { icon: buildMarkerIcon(owner) });
+          marker.bindPopup(
+            `<div class="psnt-popup-name">${name}</div>` +
+            (owner  ? `<div class="psnt-popup-owner">${owner}</div>`   : '') +
+            `<div class="psnt-popup-address">${addr}</div>` +
+            (status ? `<span class="psnt-popup-status">${status}</span>` : ''),
+            { maxWidth: 260 }
+          );
+          marker.addTo(map);
+          markers[s._idx] = marker;
+        });
+
+        buildFilters(allStations);
+        applyFilters();
+      })
+      .catch((err) => {
+        document.getElementById('psnt-loading')!.innerHTML =
+          '<div class="psnt-loading-text" style="color:#ff6b6b">Failed to load stations</div>';
+        console.error(err);
+      });
+  }
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onload="initMap()"></script>
