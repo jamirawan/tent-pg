@@ -45,6 +45,29 @@ const { height = '600px' } = Astro.props;
 </div>
 
 <style>
+@media (max-width: 768px) {
+  .psnt-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    height: auto !important;
+  }
+  .psnt-map-container {
+    grid-column: 1;
+    height: 55vw;
+    min-height: 260px;
+    max-height: 400px;
+  }
+  #psnt-fuel-map {
+    height: 100%;
+  }
+  .psnt-sidebar {
+    grid-column: 1;
+    max-height: 400px;
+    border-right: none;
+    border-top: 1px solid #e0ddd6;
+  }
+}
+
   .psnt-wrapper {
     display: grid;
     grid-template-columns: 340px 1fr;
@@ -52,7 +75,7 @@ const { height = '600px' } = Astro.props;
     overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(31,31,95,0.12);
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: DM Sans, Helvetica Neue, Helvetica, sans-serif;
     color: #1f1f5f;
   }
 
@@ -72,7 +95,7 @@ const { height = '600px' } = Astro.props;
     font-size: 1.1rem;
     font-weight: normal;
     letter-spacing: 0.04em;
-    text-transform: uppercase;
+   
   }
 
   .psnt-header-title span {
@@ -178,13 +201,14 @@ const { height = '600px' } = Astro.props;
   }
 
   .psnt-station-item {
-    padding: 12px 16px;
+    padding: 20px 8px;
     border-bottom: 1px solid #e0ddd6;
     cursor: pointer;
     transition: background 0.15s;
-    display: flex;
     flex-direction: column;
     gap: 3px;
+    line-height: 2rem;
+    display: none;
   }
 
   .psnt-station-item:hover {
@@ -200,8 +224,8 @@ const { height = '600px' } = Astro.props;
     font-size: 0.88rem;
     font-weight: bold;
     color: #1f1f5f;
-    text-transform: uppercase;
     letter-spacing: 0.02em;
+    font-weight: 900;
   }
 
   .psnt-station-owner {
@@ -266,7 +290,6 @@ const { height = '600px' } = Astro.props;
   .psnt-loading-text {
     font-size: 0.9rem;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
     opacity: 0.8;
   }
 
