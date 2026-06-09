@@ -1,5 +1,5 @@
 ---
-// FuelCalculator.astro
+// CalculatorSectionMap.astro
 ---
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
@@ -28,10 +28,10 @@
           <option value="KTR">Katherine</option>
           <option value="ULU">Uluru</option>
         </select>
-        <span class="dest-select-arrow">▾</span>
+        <span class="dest-select-arrow">&#9662;</span>
       </div>
 
-      <button class="dest-swap-btn" id="swapBtn" title="Swap cities">⇄</button>
+      <button class="dest-swap-btn" id="swapBtn" title="Swap cities">&#8644;</button>
 
       <div class="dest-select-wrap">
         <span class="dest-label">To</span>
@@ -43,7 +43,7 @@
           <option value="KTR">Katherine</option>
           <option value="ULU">Uluru</option>
         </select>
-        <span class="dest-select-arrow">▾</span>
+        <span class="dest-select-arrow">&#9662;</span>
       </div>
 
       <div class="trip-toggle">
@@ -59,7 +59,7 @@
     </div>
 
     <div class="dest-info-strip" id="destInfoStrip">
-      <span>📍</span>
+      <span>&#128205;</span>
       <span id="destInfoText"></span>
     </div>
 
@@ -109,7 +109,7 @@
         <div class="eff-note" id="effNote">Select a vehicle type to see its consumption range.</div>
       </div>
 
-      <button class="calc-btn" id="calcBtn">Calculate →</button>
+      <button class="calc-btn" id="calcBtn">Calculate &#8594;</button>
     </div>
 
     <div class="result-card" id="resultCard">
@@ -148,6 +148,42 @@
   @media (max-width: 600px) {
     .route-map { height: 240px; }
   }
+
+  .route-legend {
+    display: flex;
+    gap: 16px;
+    padding: 8px 14px;
+    background: white;
+    border-top: 1px solid #e0ddd6;
+    font-size: 0.78rem;
+    color: #555;
+    flex-wrap: wrap;
+  }
+
+  .route-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  .route-legend-item:hover {
+    background: #f5f4f0;
+  }
+
+  .route-legend-item.active {
+    font-weight: bold;
+    color: #1f1f5f;
+  }
+
+  .route-legend-swatch {
+    width: 24px;
+    height: 4px;
+    border-radius: 2px;
+  }
 </style>
 
 <script is:inline>
@@ -176,7 +212,6 @@
     ULU: { SYD:2841, MEL:2303, BNE:3001, PER:3041, ADL:1602, CBR:2635, HBA:2900, DRW:1964, ASP:450,  NHU:2797, KTR:1634 },
   };
 
-  // Lat/lng coordinates for each city code
   var CITY_COORDS = {
     SYD: [-33.8688, 151.2093],
     MEL: [-37.8136, 144.9631],
@@ -207,93 +242,187 @@
   var selectedCar = null;
 
   // --- Leaflet map state ---
-  var leafletMap = null;
-  var routeLine = null;
-  var fromMarker = null;
-  var toMarker = null;
+  var leafletMap  = null;
+  var routeLines  = [];  // all alternative polylines
+  var fromMarker  = null;
+  var toMarker    = null;
+  var activeRouteIdx = 0;
+
+  // Route colour palette
+  var ROUTE_COLORS = ['#1a73e8', '#e66300', '#2e7d32'];
 
   function initMap() {
-    if (leafletMap) return; // already initialised
+    if (leafletMap) return;
     leafletMap = L.map('routeMap', { zoomControl: true, scrollWheelZoom: false });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(leafletMap);
   }
 
-  function updateMap(from, to) {
-  var wrap = document.getElementById('routeMapWrap');
-
-  if (!from || !to || from === to || !CITY_COORDS[from] || !CITY_COORDS[to]) {
-    wrap.classList.remove('visible');
-    if (leafletMap) {
-      if (routeLine)  { leafletMap.removeLayer(routeLine);  routeLine = null; }
-      if (fromMarker) { leafletMap.removeLayer(fromMarker); fromMarker = null; }
-      if (toMarker)   { leafletMap.removeLayer(toMarker);   toMarker = null; }
-    }
-    return;
+  function clearRouteLines() {
+    routeLines.forEach(function (l) { leafletMap.removeLayer(l); });
+    routeLines = [];
+    activeRouteIdx = 0;
   }
 
-  wrap.classList.add('visible');
-  initMap();
+  function setActiveRoute(idx) {
+    activeRouteIdx = idx;
+    routeLines.forEach(function (l, i) {
+      var routeColor = ROUTE_COLORS[i] || '#888';
+      l.setStyle({
+        color:   routeColor,
+        weight:  i === idx ? 5 : 3,
+        opacity: i === idx ? 0.95 : 0.4,
+      });
+      if (i === idx) l.bringToFront();
+    });
+    // Update legend active state
+    var items = document.querySelectorAll('.route-legend-item');
+    items.forEach(function (el, i) { el.classList.toggle('active', i === idx); });
+  }
 
-  setTimeout(function () {
-    leafletMap.invalidateSize();
+  function buildLegend(routes) {
+    var wrap = document.getElementById('routeMapWrap');
+    var existing = document.getElementById('routeLegend');
+    if (existing) existing.remove();
 
-    var fromCoord = CITY_COORDS[from];
-    var toCoord   = CITY_COORDS[to];
+    if (routes.length < 2) return;
 
-    // Remove old layers
-    if (routeLine)  { leafletMap.removeLayer(routeLine);  routeLine = null; }
-    if (fromMarker) { leafletMap.removeLayer(fromMarker); fromMarker = null; }
-    if (toMarker)   { leafletMap.removeLayer(toMarker);   toMarker = null; }
+    var legend = document.createElement('div');
+    legend.id = 'routeLegend';
+    legend.className = 'route-legend';
 
-    // Add markers immediately
-    fromMarker = L.marker(fromCoord).addTo(leafletMap)
-      .bindPopup('<strong>' + CITY_SHORT[from] + '</strong>');
-    toMarker = L.marker(toCoord).addTo(leafletMap)
-      .bindPopup('<strong>' + CITY_SHORT[to] + '</strong>');
+    routes.forEach(function (route, i) {
+      var distKm = Math.round(route.distance / 1000);
+      var durMin = Math.round(route.duration / 60);
+      var hours  = Math.floor(durMin / 60);
+      var mins   = durMin % 60;
+      var durStr = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
+      var label  = i === 0 ? 'Recommended' : 'Alternative ' + i;
 
-    // Fit to markers while route loads
-    leafletMap.fitBounds([fromCoord, toCoord], { padding: [40, 40] });
+      var item = document.createElement('div');
+      item.className = 'route-legend-item' + (i === 0 ? ' active' : '');
+      item.innerHTML =
+        '<div class="route-legend-swatch" style="background:' + (ROUTE_COLORS[i] || '#bbb') + '"></div>' +
+        '<span><strong>' + label + '</strong> &mdash; ' + distKm.toLocaleString() + ' km &middot; ' + durStr + '</span>';
 
-    // Fetch road route from OSRM (free, no API key)
-    var url = 'https://router.project-osrm.org/route/v1/driving/'
-      + fromCoord[1] + ',' + fromCoord[0] + ';'
-      + toCoord[1]   + ',' + toCoord[0]
-      + '?overview=full&geometries=geojson';
+      (function (clickIdx) {
+        item.addEventListener('click', function () { setActiveRoute(clickIdx); });
+      })(i);
 
-    fetch(url)
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (!data.routes || !data.routes[0]) return;
+      legend.appendChild(item);
+    });
 
-        // OSRM returns [lng, lat] — Leaflet needs [lat, lng], so flip each coord
-        var coords = data.routes[0].geometry.coordinates.map(function (c) {
-          return [c[1], c[0]];
+    wrap.appendChild(legend);
+  }
+
+  function updateMap(from, to) {
+    var wrap = document.getElementById('routeMapWrap');
+
+    if (!from || !to || from === to || !CITY_COORDS[from] || !CITY_COORDS[to]) {
+      wrap.classList.remove('visible');
+      if (leafletMap) {
+        clearRouteLines();
+        if (fromMarker) { leafletMap.removeLayer(fromMarker); fromMarker = null; }
+        if (toMarker)   { leafletMap.removeLayer(toMarker);   toMarker = null; }
+        var leg = document.getElementById('routeLegend');
+        if (leg) leg.remove();
+      }
+      return;
+    }
+
+    wrap.classList.add('visible');
+    initMap();
+
+    setTimeout(function () {
+      leafletMap.invalidateSize();
+
+      var fromCoord = CITY_COORDS[from];
+      var toCoord   = CITY_COORDS[to];
+
+      // Clear old layers
+      clearRouteLines();
+      if (fromMarker) { leafletMap.removeLayer(fromMarker); fromMarker = null; }
+      if (toMarker)   { leafletMap.removeLayer(toMarker);   toMarker = null; }
+
+      // Add markers
+      fromMarker = L.marker(fromCoord).addTo(leafletMap)
+        .bindPopup('<strong>' + CITY_SHORT[from] + '</strong>');
+      toMarker = L.marker(toCoord).addTo(leafletMap)
+        .bindPopup('<strong>' + CITY_SHORT[to] + '</strong>');
+
+      leafletMap.fitBounds([fromCoord, toCoord], { padding: [40, 40] });
+
+      // Fetch with alternatives
+      var url = 'https://router.project-osrm.org/route/v1/driving/'
+        + fromCoord[1] + ',' + fromCoord[0] + ';'
+        + toCoord[1]   + ',' + toCoord[0]
+        + '?overview=full&geometries=geojson&alternatives=3';
+
+      fetch(url)
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (!data.routes || !data.routes[0]) return;
+
+          var allBounds = [];
+
+          // Draw alternatives first (so primary renders on top)
+          data.routes.slice().reverse().forEach(function (route, revIdx) {
+            var i = data.routes.length - 1 - revIdx;
+            var coords = route.geometry.coordinates.map(function (c) {
+              return [c[1], c[0]];
+            });
+
+            var isPrimary = i === 0;
+            var routeColor = ROUTE_COLORS[i] || '#888';
+            var line = L.polyline(coords, {
+              color:   routeColor,
+              weight:  isPrimary ? 5 : 3,
+              opacity: isPrimary ? 0.95 : 0.6,
+            }).addTo(leafletMap);
+
+            var distKm = Math.round(route.distance / 1000);
+            var durMin = Math.round(route.duration / 60);
+            var hours  = Math.floor(durMin / 60);
+            var mins   = durMin % 60;
+            var durStr = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
+            var label  = isPrimary ? 'Recommended' : 'Alternative ' + i;
+
+            line.bindTooltip(
+              '<strong>' + label + '</strong><br>' +
+              distKm.toLocaleString() + ' km &middot; ' + durStr,
+              { sticky: true }
+            );
+
+            (function (clickIdx) {
+              line.on('click', function () { setActiveRoute(clickIdx); });
+            })(i);
+
+            // Insert at correct index so routeLines[i] = line for that route
+            routeLines[i] = line;
+            coords.forEach(function (c) { allBounds.push(c); });
+          });
+
+          buildLegend(data.routes);
+
+          if (allBounds.length) {
+            leafletMap.fitBounds(allBounds, { padding: [40, 40] });
+          }
+
+          // Bring primary to front
+          if (routeLines[0]) routeLines[0].bringToFront();
+          if (fromMarker) fromMarker.bringToFront();
+          if (toMarker)   toMarker.bringToFront();
+        })
+        .catch(function (err) {
+          console.warn('OSRM route fetch failed:', err);
+          // No fallback line — just keep markers visible
+          leafletMap.fitBounds([fromCoord, toCoord], { padding: [40, 40] });
         });
 
-        routeLine = L.polyline(coords, {
-          color: '#1a73e8',
-          weight: 4,
-          opacity: 0.85,
-        }).addTo(leafletMap);
-
-        leafletMap.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
-      })
-      .catch(function () {
-        // Fallback to straight line if OSRM fails
-        routeLine = L.polyline([fromCoord, toCoord], {
-          color: '#1a73e8',
-          weight: 3,
-          opacity: 0.8,
-          dashArray: '8, 6',
-        }).addTo(leafletMap);
-        leafletMap.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
-      });
-
-  }, 50);
-}
+    }, 50);
+  }
 
   function getTripType() {
     var radios = document.querySelectorAll('input[name="trip-type"]');
@@ -310,7 +439,7 @@
       return '<div class="car-option" id="car_' + c.id + '" data-id="' + c.id + '">' +
         '<div class="car-icon"><img src="' + c.icon + '" alt="' + c.name + '" class="car-icon-svg" /></div>' +
         '<div class="car-name">' + c.name + '</div>' +
-        '<div class="car-eff">' + c.effMin + '–' + c.effMax + ' L/100km</div>' +
+        '<div class="car-eff">' + c.effMin + '&#8211;' + c.effMax + ' L/100km</div>' +
         '</div>';
     }).join('');
 
@@ -333,8 +462,8 @@
     var note = document.getElementById('effNote');
     var effInput = document.getElementById('fuelEfficiency');
     note.innerHTML = 'Typical range for <strong>' + selectedCar.name + '</strong>: ' +
-      selectedCar.effMin + '–' + selectedCar.effMax + ' L/100km (' + selectedCar.eg + '). Edit to override.';
-    effInput.placeholder = selectedCar.effMin + '–' + selectedCar.effMax;
+      selectedCar.effMin + '&#8211;' + selectedCar.effMax + ' L/100km (' + selectedCar.eg + '). Edit to override.';
+    effInput.placeholder = selectedCar.effMin + '&#8211;' + selectedCar.effMax;
     effInput.value = '';
   }
 
@@ -354,7 +483,7 @@
       var returnLabel = tripType === 'return' ? ' (Return)' : '';
       strip.classList.add('visible');
       text.innerHTML = '<strong>' + CITY_SHORT[from] + '</strong> to <strong>' + CITY_SHORT[to] + '</strong>' + returnLabel +
-        ' — approximately <strong>' + totalKm.toLocaleString() + ' km</strong> by road.';
+        ' &#8212; approximately <strong>' + totalKm.toLocaleString() + ' km</strong> by road.';
       distInput.value = totalKm;
       updateDistanceNote();
     } else {
@@ -385,11 +514,11 @@
   function fmt$(n) { return '$' + n.toFixed(0); }
   function fmtRange$(lo, hi) {
     if (Math.abs(hi - lo) < 2) return fmt$(Math.round((lo + hi) / 2));
-    return fmt$(lo) + ' – ' + fmt$(hi);
+    return fmt$(lo) + ' &#8211; ' + fmt$(hi);
   }
   function fmtRangeL(lo, hi) {
     if (Math.abs(hi - lo) < 2) return Math.round((lo + hi) / 2) + 'L';
-    return Math.round(lo) + '–' + Math.round(hi) + 'L';
+    return Math.round(lo) + '&#8211;' + Math.round(hi) + 'L';
   }
   function calcCost(distance, fuelPrice, eff) {
     var liters = (distance / 100) * eff;
@@ -402,8 +531,8 @@
     var fuelPrice   = parseFloat(document.getElementById('fuelPrice').value);
     var effOverride = parseFloat(document.getElementById('fuelEfficiency').value);
 
-    if (!selectedCar)               { showError('Please select a vehicle type.'); return; }
-    if (!distance || distance <= 0) { showError('Please enter a valid distance.'); return; }
+    if (!selectedCar)                 { showError('Please select a vehicle type.'); return; }
+    if (!distance || distance <= 0)   { showError('Please enter a valid distance.'); return; }
     if (!fuelPrice || fuelPrice <= 0) { showError('Please enter a valid fuel price.'); return; }
 
     var totalDist = distance;
@@ -413,8 +542,8 @@
     var hasRoute = from && to && from !== to && DIST[from] && DIST[from][to];
     var routeStr = hasRoute
       ? (tripType === 'return'
-          ? CITY_SHORT[from] + ' → ' + CITY_SHORT[to] + ' → ' + CITY_SHORT[from]
-          : CITY_SHORT[from] + ' → ' + CITY_SHORT[to])
+          ? CITY_SHORT[from] + ' &#8594; ' + CITY_SHORT[to] + ' &#8594; ' + CITY_SHORT[from]
+          : CITY_SHORT[from] + ' &#8594; ' + CITY_SHORT[to])
       : totalDist.toLocaleString() + ' km';
 
     var costLo, costHi, litersLo, litersHi, effLo, effHi;
@@ -433,9 +562,9 @@
       effLo = selectedCar.effMin; effHi = selectedCar.effMax;
     }
 
-    var costDisplay   = useOverride ? fmt$(costLo)                     : fmtRange$(costLo, costHi);
-    var litersDisplay = useOverride ? Math.round(litersLo) + 'L'       : fmtRangeL(litersLo, litersHi);
-    var effDisplay    = useOverride ? effOverride + ' L/100km (custom)' : effLo + '–' + effHi + ' L/100km';
+    var costDisplay   = useOverride ? fmt$(costLo)               : fmtRange$(costLo, costHi);
+    var litersDisplay = useOverride ? Math.round(litersLo) + 'L' : fmtRangeL(litersLo, litersHi);
+    var effDisplay    = useOverride ? effOverride + ' L/100km (custom)' : effLo + '&#8211;' + effHi + ' L/100km';
 
     document.getElementById('resultBody').innerHTML =
       '<div class="result-cost-block">' +
@@ -455,10 +584,7 @@
 
   function showError(msg) {
     document.getElementById('resultBody').innerHTML =
-      '<div class="empty-state">' +
-        '<div class="big">⚠️</div>' +
-        '<div>' + msg + '</div>' +
-      '</div>';
+      '<div class="empty-state"><div class="big">&#9888;&#65039;</div><div>' + msg + '</div></div>';
   }
 
   document.getElementById('destFrom').addEventListener('change', onRouteChange);
