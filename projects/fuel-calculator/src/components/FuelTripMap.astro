@@ -1,0 +1,947 @@
+---
+// src/components/FuelTripMap.astro
+---
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
+<div class="ftm-root">
+
+  <!-- ── CALCULATOR SECTION ── -->
+  <div class="ftm-calculator">
+
+    <div class="ftm-calc-top">
+
+      <div class="ftm-route-section">
+        <p class="ftm-subtitle">Select your departure and destination to calculate distance and see fuel stations along the route.</p>
+        <div class="ftm-dest-selector">
+          <div class="ftm-select-wrap">
+            <span class="ftm-label">From</span>
+            <select id="ftmFrom" class="ftm-select">
+              <option value="">Select city</option>
+              <option value="SYD">Sydney</option>
+              <option value="MEL">Melbourne</option>
+              <option value="BNE">Brisbane</option>
+              <option value="PER">Perth</option>
+              <option value="ADL">Adelaide</option>
+              <option value="CBR">Canberra</option>
+              <option value="HBA">Hobart</option>
+              <option value="DRW">Darwin</option>
+              <option value="ASP">Alice Springs</option>
+              <option value="NHU">Nhulunbuy</option>
+              <option value="KTR">Katherine</option>
+              <option value="ULU">Uluru</option>
+            </select>
+            <span class="ftm-select-arrow">&#9662;</span>
+          </div>
+          <button class="ftm-swap-btn" id="ftmSwapBtn" title="Swap cities">&#8644;</button>
+          <div class="ftm-select-wrap">
+            <span class="ftm-label">To</span>
+            <select id="ftmTo" class="ftm-select">
+              <option value="">Select city</option>
+              <option value="DRW">Darwin</option>
+              <option value="ASP">Alice Springs</option>
+              <option value="NHU">Nhulunbuy</option>
+              <option value="KTR">Katherine</option>
+              <option value="ULU">Uluru</option>
+            </select>
+            <span class="ftm-select-arrow">&#9662;</span>
+          </div>
+          <div class="ftm-trip-toggle">
+            <label><input type="radio" name="ftm-trip-type" value="one-way" checked /> One way</label>
+            <label><input type="radio" name="ftm-trip-type" value="return" /> Return trip</label>
+          </div>
+        </div>
+        <div class="ftm-info-strip" id="ftmInfoStrip">
+          <span>&#128205;</span>
+          <span id="ftmInfoText"></span>
+        </div>
+      </div>
+
+      <div class="ftm-fields-section">
+        <div class="ftm-card-title">Vehicle &amp; fuel</div>
+        <div class="ftm-car-grid" id="ftmCarGrid"></div>
+
+        <div class="ftm-fields-row">
+          <div class="ftm-field">
+            <label>Distance</label>
+            <div class="ftm-input-wrap">
+              <input type="number" id="ftmDistance" placeholder="km" />
+              <span class="ftm-suffix">km</span>
+            </div>
+            <div class="ftm-field-note" id="ftmDistanceNote"></div>
+          </div>
+          <div class="ftm-field">
+            <label>Fuel price</label>
+            <div class="ftm-input-wrap">
+              <input type="number" id="ftmFuelPrice" placeholder="e.g. 2.10" step="0.01" />
+              <span class="ftm-suffix">$/L</span>
+            </div>
+            <div class="ftm-field-note"><a href="https://myfuelnt.nt.gov.au/" target="_blank">Check MyFuel NT</a></div>
+          </div>
+          <div class="ftm-field">
+            <label>Consumption <span class="ftm-optional">(optional)</span></label>
+            <div class="ftm-input-wrap">
+              <input type="number" id="ftmEfficiency" placeholder="L/100km" step="0.1" />
+              <span class="ftm-suffix">L/100km</span>
+            </div>
+            <div class="ftm-field-note" id="ftmEffNote">Select a vehicle type.</div>
+          </div>
+        </div>
+
+        <div class="ftm-calc-row">
+          <button class="ftm-calc-btn" id="ftmCalcBtn">Calculate &#8594;</button>
+          <div class="ftm-result-inline" id="ftmResult"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── MAP SECTION ── -->
+  <div class="ftm-map-wrap">
+    <div class="ftm-map-legend" id="ftmRouteLegend"></div>
+    <div class="ftm-station-count" id="ftmStationCount"></div>
+    <div id="ftmMap" class="ftm-map"></div>
+    <div class="ftm-map-loading" id="ftmMapLoading">
+      <div class="ftm-loading-dots">
+        <span class="ftm-dot"></span><span class="ftm-dot"></span><span class="ftm-dot"></span>
+      </div>
+      <div class="ftm-loading-text">Loading fuel stations&hellip;</div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  /* ── Root ── */
+  .ftm-root {
+    font-family: 'DM Sans', 'Helvetica Neue', Helvetica, sans-serif;
+    color: #1f1f5f;
+    background: #f5f4f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(31,31,95,0.1);
+  }
+
+  /* ── Calculator ── */
+  .ftm-calculator {
+    padding: 24px;
+    background: white;
+    border-bottom: 3px solid #e66300;
+  }
+
+  .ftm-calc-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .ftm-subtitle {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  /* Destination selector */
+  .ftm-dest-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .ftm-select-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ftm-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #999;
+  }
+
+  .ftm-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 8px 32px 8px 12px;
+    border: 1px solid #e0ddd6;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: #1f1f5f;
+    background: white;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 140px;
+  }
+
+  .ftm-select:focus { border-color: #e66300; }
+
+  .ftm-select-arrow {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    pointer-events: none;
+    font-size: 0.75rem;
+    color: #999;
+  }
+
+  .ftm-swap-btn {
+    margin-top: 18px;
+    background: #f5f4f0;
+    border: 1px solid #e0ddd6;
+    border-radius: 50%;
+    width: 34px; height: 34px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    color: #1f1f5f;
+  }
+
+  .ftm-swap-btn:hover { background: #e66300; color: white; border-color: #e66300; }
+
+  .ftm-trip-toggle {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+    font-size: 0.83rem;
+  }
+
+  .ftm-trip-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+
+  .ftm-info-strip {
+    display: none;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: #fdf6f1;
+    border-left: 3px solid #e66300;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .ftm-info-strip.visible { display: flex; }
+
+  /* Fields */
+  .ftm-card-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #999;
+    margin-bottom: 10px;
+  }
+
+  .ftm-car-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  :global(.ftm-car-option) {
+    border: 1px solid #e0ddd6;
+    border-radius: 6px;
+    padding: 8px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: white;
+  }
+
+  :global(.ftm-car-option:hover) { border-color: #e66300; background: #fdf6f1; }
+  :global(.ftm-car-option.selected) { border-color: #e66300; background: #fdf6f1; box-shadow: 0 0 0 2px rgba(230,99,0,0.2); }
+
+  :global(.ftm-car-icon img) { width: 40px; height: 28px; object-fit: contain; }
+  :global(.ftm-car-name) { font-size: 0.68rem; color: #1f1f5f; margin-top: 4px; line-height: 1.2; }
+  :global(.ftm-car-eff) { font-size: 0.62rem; color: #999; margin-top: 2px; }
+
+  .ftm-fields-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .ftm-field label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #1f1f5f;
+  }
+
+  .ftm-optional { font-weight: normal; color: #aaa; font-size: 0.7rem; }
+
+  .ftm-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .ftm-input-wrap input {
+    width: 100%;
+    padding: 8px 40px 8px 10px;
+    border: 1px solid #e0ddd6;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.83rem;
+    color: #1f1f5f;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+
+  .ftm-input-wrap input:focus { border-color: #e66300; }
+
+  .ftm-suffix {
+    position: absolute;
+    right: 8px;
+    font-size: 0.72rem;
+    color: #aaa;
+    pointer-events: none;
+  }
+
+  .ftm-field-note {
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  .ftm-field-note a { color: #e66300; }
+
+  .ftm-calc-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .ftm-calc-btn {
+    padding: 10px 24px;
+    background: #e66300;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .ftm-calc-btn:hover { background: #c95800; }
+
+  /* Inline result */
+  :global(.ftm-result-inline) { flex: 1; min-width: 200px; }
+
+  :global(.ftm-result-cost) {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #e66300;
+    line-height: 1;
+  }
+
+  :global(.ftm-result-label) {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #999;
+    margin-bottom: 4px;
+  }
+
+  :global(.ftm-result-meta) {
+    font-size: 0.75rem;
+    color: #777;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+
+  :global(.ftm-result-error) {
+    font-size: 0.82rem;
+    color: #c00;
+    padding: 8px 0;
+  }
+
+  /* ── Map ── */
+  .ftm-map-wrap {
+    position: relative;
+  }
+
+  .ftm-map {
+    width: 100%;
+    height: 520px;
+  }
+
+  .ftm-map-loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(31,31,95,0.82);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 1000;
+    color: white;
+  }
+
+  .ftm-loading-dots { display: flex; gap: 8px; }
+
+  .ftm-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #e66300;
+    animation: ftm-pulse 1.2s ease-in-out infinite;
+  }
+
+  .ftm-dot:nth-child(2) { animation-delay: 0.2s; background: white; }
+  .ftm-dot:nth-child(3) { animation-delay: 0.4s; background: #db0c67; }
+
+  @keyframes ftm-pulse {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+    40%           { transform: scale(1);   opacity: 1; }
+  }
+
+  .ftm-loading-text { font-size: 0.88rem; letter-spacing: 0.1em; opacity: 0.8; }
+
+  /* Route legend */
+  .ftm-map-legend {
+    display: flex;
+    gap: 16px;
+    padding: 8px 14px;
+    background: white;
+    border-bottom: 1px solid #e0ddd6;
+    font-size: 0.78rem;
+    color: #555;
+    flex-wrap: wrap;
+    min-height: 0;
+  }
+
+  .ftm-map-legend:empty { display: none; }
+
+  :global(.ftm-legend-item) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  :global(.ftm-legend-item:hover) { background: #f5f4f0; }
+  :global(.ftm-legend-item.active) { font-weight: bold; color: #1f1f5f; }
+  :global(.ftm-legend-swatch) { width: 24px; height: 4px; border-radius: 2px; }
+
+  /* Station count badge */
+  .ftm-station-count {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 500;
+    background: white;
+    border: 1px solid #e0ddd6;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    color: #1f1f5f;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    display: none;
+  }
+
+  /* Leaflet popup */
+  :global(.leaflet-popup-content-wrapper) {
+    border-radius: 6px !important;
+    border-top: 3px solid #e66300 !important;
+    font-family: 'DM Sans', Helvetica, sans-serif !important;
+  }
+
+  :global(.ftm-popup-name)    { font-weight: 700; color: #1f1f5f; font-size: 0.88rem; }
+  :global(.ftm-popup-owner)   { color: #e66300; font-size: 0.78rem; margin: 2px 0; }
+  :global(.ftm-popup-address) { color: #666; font-size: 0.76rem; }
+
+  /* ── Mobile ── */
+  @media (max-width: 768px) {
+    .ftm-calc-top {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .ftm-car-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .ftm-fields-row {
+      grid-template-columns: 1fr;
+    }
+
+    .ftm-map { height: 380px; }
+  }
+</style>
+
+<script is:inline>
+(function () {
+
+  // ── Data ──────────────────────────────────────────────
+  var cars = [
+    { id: 'small',   name: 'Small car',        icon: 'https://a.storyblok.com/f/286255898790625/800x800/d0ccec5728/car-hatchback-city-blue.svg', effMin: 3.3,  effMax: 7.5  },
+    { id: 'medium',  name: 'Medium car',        icon: 'https://a.storyblok.com/f/286255898790625/800x800/1a36cbfddd/sedan-car-blue.svg',          effMin: 4.0,  effMax: 9.0  },
+    { id: 'large',   name: 'People mover',      icon: 'https://a.storyblok.com/f/286255898790625/244x150/4be4d73a83/peoplemover.svg',            effMin: 6.5,  effMax: 11.5 },
+    { id: 'suv_sm',  name: 'SUV (small)',        icon: 'https://a.storyblok.com/f/286255898790625/800x800/b1daa860ea/car-suv-blue.svg',            effMin: 7.0,  effMax: 9.5  },
+    { id: 'suv_lg',  name: 'SUV / ute',          icon: 'https://a.storyblok.com/f/286255898790625/299x150/6ce7a77ac8/rusty-ute-blue.svg',         effMin: 7.0,  effMax: 13.5 },
+    { id: 'caravan', name: '4WD + caravan',      icon: 'https://a.storyblok.com/f/286255898790625/289x150/eb8230bc99/ute-caravan-blue.svg',        effMin: 16.0, effMax: 25.0 },
+  ];
+
+  var DIST = {
+    SYD:{MEL:878,BNE:923,PER:4016,ADL:1376,CBR:281,HBA:1160,DRW:3934,ASP:2762,NHU:4553,KTR:3544,ULU:2841},
+    MEL:{SYD:878,BNE:1765,PER:3509,ADL:727,CBR:654,HBA:597,DRW:3752,ASP:2255,NHU:4371,KTR:3362,ULU:2303},
+    BNE:{SYD:923,MEL:1765,PER:4311,ADL:2045,CBR:1185,HBA:2103,DRW:3426,ASP:2730,NHU:4225,KTR:3217,ULU:3001},
+    PER:{SYD:4016,MEL:3509,BNE:4311,ADL:2716,CBR:3787,HBA:4106,DRW:4032,ASP:2481,NHU:4950,KTR:3841,ULU:3041},
+    ADL:{SYD:1376,MEL:727,BNE:2045,PER:2716,CBR:1188,HBA:1328,DRW:3025,ASP:1528,NHU:3644,KTR:2635,ULU:1602},
+    CBR:{SYD:281,MEL:654,BNE:1185,PER:3787,ADL:1188,HBA:1130,DRW:3955,ASP:2783,NHU:4574,KTR:3565,ULU:2635},
+    HBA:{SYD:1160,MEL:597,BNE:2103,PER:4106,ADL:1328,CBR:1130,DRW:4349,ASP:2852,NHU:4968,KTR:3959,ULU:2900},
+    DRW:{SYD:3934,MEL:3752,BNE:3426,PER:4032,ADL:3025,CBR:3955,HBA:4349,ASP:1497,NHU:1150,KTR:317,ULU:1964},
+    ASP:{SYD:2762,MEL:2255,BNE:2730,PER:2481,ADL:1528,CBR:2783,HBA:2852,DRW:1497,NHU:2647,KTR:1180,ULU:450},
+    NHU:{SYD:4553,MEL:4371,BNE:4225,PER:4950,ADL:3644,CBR:4574,HBA:4968,DRW:1150,ASP:2647,KTR:1467,ULU:2797},
+    KTR:{SYD:3544,MEL:3362,BNE:3217,PER:3841,ADL:2635,CBR:3565,HBA:3959,DRW:317,ASP:1180,NHU:1467,ULU:1634},
+    ULU:{SYD:2841,MEL:2303,BNE:3001,PER:3041,ADL:1602,CBR:2635,HBA:2900,DRW:1964,ASP:450,NHU:2797,KTR:1634},
+  };
+
+  var CITY_COORDS = {
+    SYD:[-33.8688,151.2093], MEL:[-37.8136,144.9631], BNE:[-27.4698,153.0251],
+    PER:[-31.9505,115.8605], ADL:[-34.9285,138.6007], CBR:[-35.2809,149.1300],
+    HBA:[-42.8821,147.3272], DRW:[-12.4634,130.8456], ASP:[-23.6980,133.8807],
+    NHU:[-12.1764,136.7754], KTR:[-14.4521,132.2637], ULU:[-25.3444,131.0369],
+  };
+
+  var CITY_SHORT = {
+    SYD:'Sydney',MEL:'Melbourne',BNE:'Brisbane',PER:'Perth',
+    ADL:'Adelaide',CBR:'Canberra',HBA:'Hobart',DRW:'Darwin',
+    ASP:'Alice Springs',NHU:'Nhulunbuy',KTR:'Katherine',ULU:'Uluru',
+  };
+
+  var OWNER_COLORS = {
+    'BP':                        '#007a33',
+    'SHELL':                     '#dd1d21',
+    'CALTEX':                    '#e30613',
+    'AMPOL':                     '#003087',
+    'UNITED':                    '#0057a8',
+    '7-ELEVEN PTY LTD':          '#ff6600',
+    'INDEPENDENT FUEL SUPPLIES': '#6a4c93',
+  };
+
+  var ROUTE_COLORS = ['#1a73e8', '#e66300', '#2e7d32'];
+
+  // ── State ─────────────────────────────────────────────
+  var map           = null;
+  var allStations   = [];
+  var stationMarkers= [];
+  var routeLines    = [];
+  var fromMarker    = null;
+  var toMarker      = null;
+  var selectedCar   = null;
+  var activeRouteIdx= 0;
+  var routeActive   = false;  // whether a route is currently drawn
+
+  // ── Helpers ───────────────────────────────────────────
+  function toTitleCase(str) {
+    return (str || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  function distanceBetween(lat1, lng1, lat2, lng2) {
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLng = (lng2 - lng1) * Math.PI / 180;
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+            Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  // Check if a point is within `thresholdKm` of any point on a polyline coords array
+  function isNearRoute(lat, lng, routeCoords, thresholdKm) {
+    for (var i = 0; i < routeCoords.length; i++) {
+      if (distanceBetween(lat, lng, routeCoords[i][0], routeCoords[i][1]) <= thresholdKm) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function buildStationIcon(owner) {
+    var bg = OWNER_COLORS[owner] || '#e66300';
+    return L.divIcon({
+      className: '',
+      html: '<div style="width:11px;height:11px;border-radius:50%;background:' + bg + ';border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>',
+      iconSize: [11, 11],
+      iconAnchor: [5, 5],
+    });
+  }
+
+  // ── Map init ──────────────────────────────────────────
+  function initMap() {
+    if (map) return;
+    map = L.map('ftmMap', { zoomControl: true, scrollWheelZoom: false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a> | &copy; Geoscience Australia 2022',
+      maxZoom: 18,
+    }).addTo(map);
+  }
+
+  // ── Fetch fuel stations ───────────────────────────────
+  function loadStations() {
+    var API = 'https://services.ga.gov.au/gis/rest/services/Liquid_Fuel_Facilities/MapServer/3/query' +
+              '?f=json&where=(station_state%20IN%20(%27NT%27))&outFields=*&resultRecordCount=1000';
+
+    fetch(API)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        document.getElementById('ftmMapLoading').style.display = 'none';
+        allStations = (data.features || []).filter(function (f) { return f.geometry; });
+
+        allStations.forEach(function (s) {
+          var a   = s.attributes;
+          var lat = s.geometry.y;
+          var lng = s.geometry.x;
+          var name  = toTitleCase(a.station_name || 'Fuel Station');
+          var owner = toTitleCase(a.station_owner || '');
+          var addr  = [a.station_address, a.station_suburb, a.station_postcode]
+                        .filter(Boolean).map(toTitleCase).join(', ');
+
+          var marker = L.marker([lat, lng], { icon: buildStationIcon(a.station_owner || '') });
+          marker.bindPopup(
+            '<div class="ftm-popup-name">' + name + '</div>' +
+            (owner ? '<div class="ftm-popup-owner">' + owner + '</div>' : '') +
+            '<div class="ftm-popup-address">' + addr + '</div>',
+            { maxWidth: 240 }
+          );
+          marker.addTo(map);
+          stationMarkers.push({ marker: marker, lat: lat, lng: lng });
+        });
+
+        updateStationCount(allStations.length);
+      })
+      .catch(function (err) {
+        document.getElementById('ftmMapLoading').innerHTML =
+          '<div class="ftm-loading-text" style="color:#ff6b6b">Failed to load stations</div>';
+        console.error(err);
+      });
+  }
+
+  function updateStationCount(n) {
+    var el = document.getElementById('ftmStationCount');
+    el.style.display = n > 0 ? 'block' : 'none';
+    el.textContent = n + ' fuel station' + (n !== 1 ? 's' : '') + (routeActive ? ' near route' : ' in NT');
+  }
+
+  // ── Filter stations near route ────────────────────────
+  function filterStationsNearRoute(routeCoords) {
+    var THRESHOLD_KM = 75;
+    var nearCount = 0;
+    stationMarkers.forEach(function (s) {
+      var near = isNearRoute(s.lat, s.lng, routeCoords, THRESHOLD_KM);
+      if (near) { s.marker.addTo(map); nearCount++; }
+      else       { map.removeLayer(s.marker); }
+    });
+    updateStationCount(nearCount);
+  }
+
+  function showAllStations() {
+    stationMarkers.forEach(function (s) { s.marker.addTo(map); });
+    updateStationCount(allStations.length);
+  }
+
+  // ── Route drawing ─────────────────────────────────────
+  function clearRoutes() {
+    routeLines.forEach(function (l) { map.removeLayer(l); });
+    routeLines = [];
+    activeRouteIdx = 0;
+    document.getElementById('ftmRouteLegend').innerHTML = '';
+  }
+
+  function setActiveRoute(idx) {
+    activeRouteIdx = idx;
+    routeLines.forEach(function (l, i) {
+      l.setStyle({
+        color:   ROUTE_COLORS[i] || '#888',
+        weight:  i === idx ? 5 : 3,
+        opacity: i === idx ? 0.95 : 0.4,
+      });
+      if (i === idx) l.bringToFront();
+    });
+    document.querySelectorAll('.ftm-legend-item').forEach(function (el, i) {
+      el.classList.toggle('active', i === idx);
+    });
+  }
+
+  function buildRouteLegend(routes) {
+    var legend = document.getElementById('ftmRouteLegend');
+    legend.innerHTML = '';
+    if (routes.length < 2) return;
+    routes.forEach(function (route, i) {
+      var distKm = Math.round(route.distance / 1000);
+      var durMin = Math.round(route.duration / 60);
+      var hours  = Math.floor(durMin / 60);
+      var mins   = durMin % 60;
+      var durStr = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
+      var label  = i === 0 ? 'Recommended' : 'Alternative ' + i;
+
+      var item = document.createElement('div');
+      item.className = 'ftm-legend-item' + (i === 0 ? ' active' : '');
+      item.innerHTML =
+        '<div class="ftm-legend-swatch" style="background:' + (ROUTE_COLORS[i] || '#888') + '"></div>' +
+        '<span><strong>' + label + '</strong> &mdash; ' + distKm.toLocaleString() + ' km &middot; ' + durStr + '</span>';
+      (function (ci) {
+        item.addEventListener('click', function () { setActiveRoute(ci); });
+      })(i);
+      legend.appendChild(item);
+    });
+  }
+
+  function updateMap(from, to) {
+    if (!from || !to || from === to) {
+      clearRoutes();
+      if (fromMarker) { map.removeLayer(fromMarker); fromMarker = null; }
+      if (toMarker)   { map.removeLayer(toMarker);   toMarker   = null; }
+      routeActive = false;
+      showAllStations();
+      return;
+    }
+
+    var fromCoord = CITY_COORDS[from];
+    var toCoord   = CITY_COORDS[to];
+    if (!fromCoord || !toCoord) return;
+
+    clearRoutes();
+    if (fromMarker) { map.removeLayer(fromMarker); fromMarker = null; }
+    if (toMarker)   { map.removeLayer(toMarker);   toMarker   = null; }
+
+    fromMarker = L.marker(fromCoord).addTo(map).bindPopup('<strong>' + CITY_SHORT[from] + '</strong>');
+    toMarker   = L.marker(toCoord).addTo(map).bindPopup('<strong>' + CITY_SHORT[to] + '</strong>');
+    map.fitBounds([fromCoord, toCoord], { padding: [40, 40] });
+
+    var url = 'https://router.project-osrm.org/route/v1/driving/'
+      + fromCoord[1] + ',' + fromCoord[0] + ';'
+      + toCoord[1]   + ',' + toCoord[0]
+      + '?overview=full&geometries=geojson&alternatives=3';
+
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.routes || !data.routes[0]) return;
+
+        var allBounds   = [];
+        var primaryCoords = null;
+
+        // Draw alternatives first so primary sits on top
+        data.routes.slice().reverse().forEach(function (route, revIdx) {
+          var i = data.routes.length - 1 - revIdx;
+          var coords = route.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+          if (i === 0) primaryCoords = coords;
+
+          var line = L.polyline(coords, {
+            color:   i === 0 ? ROUTE_COLORS[0] : '#bbb',
+            weight:  i === 0 ? 5 : 3,
+            opacity: i === 0 ? 0.95 : 0.4,
+          }).addTo(map);
+
+          var distKm = Math.round(route.distance / 1000);
+          var durMin = Math.round(route.duration / 60);
+          var hours  = Math.floor(durMin / 60);
+          var mins   = durMin % 60;
+          line.bindTooltip(
+            '<strong>' + (i === 0 ? 'Recommended' : 'Alternative ' + i) + '</strong><br>' +
+            distKm.toLocaleString() + ' km &middot; ' + (hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm'),
+            { sticky: true }
+          );
+
+          (function (ci) { line.on('click', function () { setActiveRoute(ci); }); })(i);
+          routeLines[i] = line;
+          coords.forEach(function (c) { allBounds.push(c); });
+        });
+
+        buildRouteLegend(data.routes);
+        if (routeLines[0]) routeLines[0].bringToFront();
+        if (fromMarker) fromMarker.bringToFront();
+        if (toMarker)   toMarker.bringToFront();
+        if (allBounds.length) map.fitBounds(allBounds, { padding: [40, 40] });
+
+        // Filter stations near primary route
+        routeActive = true;
+        if (primaryCoords) filterStationsNearRoute(primaryCoords);
+      })
+      .catch(function (err) {
+        console.warn('OSRM failed:', err);
+        map.fitBounds([fromCoord, toCoord], { padding: [40, 40] });
+      });
+  }
+
+  // ── Calculator ────────────────────────────────────────
+  function getTripType() {
+    var radios = document.querySelectorAll('input[name="ftm-trip-type"]');
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked) return radios[i].value;
+    }
+    return 'one-way';
+  }
+
+  function renderCars() {
+    var grid = document.getElementById('ftmCarGrid');
+    grid.innerHTML = cars.map(function (c) {
+      return '<div class="ftm-car-option" id="ftmCar_' + c.id + '" data-id="' + c.id + '">' +
+        '<div class="ftm-car-icon"><img src="' + c.icon + '" alt="' + c.name + '" /></div>' +
+        '<div class="ftm-car-name">' + c.name + '</div>' +
+        '<div class="ftm-car-eff">' + c.effMin + '&#8211;' + c.effMax + 'L</div>' +
+        '</div>';
+    }).join('');
+
+    grid.addEventListener('click', function (e) {
+      var opt = e.target.closest('.ftm-car-option');
+      if (!opt) return;
+      selectCar(opt.getAttribute('data-id'));
+    });
+  }
+
+  function selectCar(id) {
+    selectedCar = null;
+    for (var i = 0; i < cars.length; i++) {
+      if (cars[i].id === id) { selectedCar = cars[i]; break; }
+    }
+    if (!selectedCar) return;
+    document.querySelectorAll('.ftm-car-option').forEach(function (el) { el.classList.remove('selected'); });
+    var el = document.getElementById('ftmCar_' + id);
+    if (el) el.classList.add('selected');
+    document.getElementById('ftmEffNote').innerHTML =
+      'Typical: <strong>' + selectedCar.effMin + '&#8211;' + selectedCar.effMax + ' L/100km</strong>. Edit to override.';
+    document.getElementById('ftmEfficiency').placeholder = selectedCar.effMin + '&#8211;' + selectedCar.effMax;
+    document.getElementById('ftmEfficiency').value = '';
+  }
+
+  function onRouteChange() {
+    var from = document.getElementById('ftmFrom').value;
+    var to   = document.getElementById('ftmTo').value;
+    var strip = document.getElementById('ftmInfoStrip');
+    var text  = document.getElementById('ftmInfoText');
+    var tripType = getTripType();
+
+    setTimeout(function () {
+      map.invalidateSize();
+      updateMap(from, to);
+    }, 50);
+
+    if (from && to && from !== to && DIST[from] && DIST[from][to]) {
+      var km = DIST[from][to];
+      var totalKm = tripType === 'return' ? km * 2 : km;
+      strip.classList.add('visible');
+      text.innerHTML = '<strong>' + CITY_SHORT[from] + '</strong> to <strong>' + CITY_SHORT[to] + '</strong>' +
+        (tripType === 'return' ? ' (return)' : '') +
+        ' &mdash; approx. <strong>' + totalKm.toLocaleString() + ' km</strong>';
+      document.getElementById('ftmDistance').value = totalKm;
+      updateDistNote();
+    } else {
+      strip.classList.remove('visible');
+      document.getElementById('ftmDistance').value = '';
+      updateDistNote();
+    }
+  }
+
+  function updateDistNote() {
+    var d = parseFloat(document.getElementById('ftmDistance').value);
+    var note = document.getElementById('ftmDistanceNote');
+    note.textContent = (!isNaN(d) && d > 0 && getTripType() === 'return')
+      ? 'Return total: ' + d.toLocaleString() + ' km' : '';
+  }
+
+  function fmt$(n) { return '$' + n.toFixed(0); }
+  function fmtRange$(lo, hi) {
+    return Math.abs(hi-lo) < 2 ? fmt$(Math.round((lo+hi)/2)) : fmt$(lo) + '&#8211;' + fmt$(hi);
+  }
+
+  function calculate() {
+    var distance    = parseFloat(document.getElementById('ftmDistance').value);
+    var fuelPrice   = parseFloat(document.getElementById('ftmFuelPrice').value);
+    var effOverride = parseFloat(document.getElementById('ftmEfficiency').value);
+    var resultEl    = document.getElementById('ftmResult');
+
+    if (!selectedCar)                 { resultEl.innerHTML = '<div class="ftm-result-error">Please select a vehicle type.</div>'; return; }
+    if (!distance || distance <= 0)   { resultEl.innerHTML = '<div class="ftm-result-error">Please enter a valid distance.</div>'; return; }
+    if (!fuelPrice || fuelPrice <= 0) { resultEl.innerHTML = '<div class="ftm-result-error">Please enter a valid fuel price.</div>'; return; }
+
+    var useOverride = !isNaN(effOverride) && effOverride > 0;
+    var effLo = useOverride ? effOverride : selectedCar.effMin;
+    var effHi = useOverride ? effOverride : selectedCar.effMax;
+    var costLo = (distance / 100) * effLo * fuelPrice;
+    var costHi = (distance / 100) * effHi * fuelPrice;
+    var litersLo = (distance / 100) * effLo;
+    var litersHi = (distance / 100) * effHi;
+
+    var from = document.getElementById('ftmFrom').value;
+    var to   = document.getElementById('ftmTo').value;
+    var hasRoute = from && to && from !== to && DIST[from] && DIST[from][to];
+    var routeStr = hasRoute
+      ? CITY_SHORT[from] + ' &#8594; ' + CITY_SHORT[to] + (getTripType() === 'return' ? ' &#8594; ' + CITY_SHORT[from] : '')
+      : distance.toLocaleString() + ' km';
+
+    resultEl.innerHTML =
+      '<div class="ftm-result-label">Estimated fuel cost</div>' +
+      '<div class="ftm-result-cost">' + (useOverride ? fmt$(costLo) : fmtRange$(costLo, costHi)) + '</div>' +
+      '<div class="ftm-result-meta">' +
+        routeStr + '<br>' +
+        selectedCar.name + ' &middot; ' + distance.toLocaleString() + ' km &middot; ' +
+        (useOverride
+          ? Math.round(litersLo) + 'L @ ' + effOverride + ' L/100km'
+          : Math.round(litersLo) + '&#8211;' + Math.round(litersHi) + 'L') +
+        ' &middot; $' + fuelPrice.toFixed(2) + '/L' +
+      '</div>';
+  }
+
+  // ── Boot ──────────────────────────────────────────────
+  function boot() {
+    initMap();
+    renderCars();
+    loadStations();
+
+    document.getElementById('ftmFrom').addEventListener('change', onRouteChange);
+    document.getElementById('ftmTo').addEventListener('change', onRouteChange);
+    document.getElementById('ftmSwapBtn').addEventListener('click', function () {
+      var f = document.getElementById('ftmFrom');
+      var t = document.getElementById('ftmTo');
+      var tmp = f.value; f.value = t.value; t.value = tmp;
+      onRouteChange();
+    });
+    document.getElementById('ftmCalcBtn').addEventListener('click', calculate);
+    document.getElementById('ftmDistance').addEventListener('input', updateDistNote);
+    document.querySelectorAll('input[name="ftm-trip-type"]').forEach(function (r) {
+      r.addEventListener('change', onRouteChange);
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Enter') calculate(); });
+  }
+
+  // Load Leaflet then boot
+  var leafletCSS = document.createElement('link');
+  leafletCSS.rel = 'stylesheet';
+  leafletCSS.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+  document.head.appendChild(leafletCSS);
+
+  var leafletJS = document.createElement('script');
+  leafletJS.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  leafletJS.onload = boot;
+  document.head.appendChild(leafletJS);
+
+})();
+</script>
