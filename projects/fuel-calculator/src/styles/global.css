@@ -1421,3 +1421,7 @@ input[type="number"].input-error {
   border-color: var(--brand-pink);
   background: var(--tints-pink-10);
 }
+
+.leaflet-bottom .leaflet-right {
+  display: none;
+}

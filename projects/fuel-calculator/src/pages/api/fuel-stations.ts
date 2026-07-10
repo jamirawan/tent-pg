@@ -1,6 +1,6 @@
 // src/pages/api/fuel-stations.ts
 export async function GET({ url }: { url: URL }) {
-  const state = url.searchParams.get('state') ?? 'NT';
+  const state = url.searchParams.get('state') ?? 'NSW';
 
   const params = new URLSearchParams({
     where: `station_state='${state}' AND operational_status='Operational'`,
