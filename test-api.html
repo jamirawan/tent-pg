@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NT Fuel Stations</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #e66300;
+      --navy:   #1f1f5f;
+      --pink:   #db0c67;
+      --light:  #f5f4f0;
+      --border: #e0ddd6;
+    }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: var(--light);
+      color: var(--navy);
+    }
+
+    .wrapper {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      grid-column: 1 / -1;
+      background: var(--navy);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 3px solid var(--orange);
+    }
+
+    .header-title {
+      font-size: 1.1rem;
+      font-weight: normal;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .header-title span {
+      color: var(--orange);
+      font-weight: bold;
+    }
+
+    .header-count {
+      margin-left: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.05em;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: white;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .search-bar {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--navy);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar input:focus {
+      border-color: var(--orange);
+    }
+
+    .suburb-dropdown select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--navy);
+      background: white;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231f1f5f' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+
+    .suburb-dropdown select:focus {
+      border-color: var(--orange);
+    }
+
+    .suburb-dropdown {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-bar {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: white;
+      font-size: 0.75rem;
+      font-family: inherit;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: white;
+    }
+
+    .station-list {
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .station-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .station-item:hover {
+      background: #fdf6f1;
+    }
+
+    .station-item.active {
+      background: #fdf6f1;
+      border-left: 3px solid var(--orange);
+    }
+
+    .station-name {
+      font-size: 0.88rem;
+      font-weight: bold;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .station-owner {
+      font-size: 0.78rem;
+      color: var(--orange);
+      font-style: italic;
+    }
+
+    .station-address {
+      font-size: 0.75rem;
+      color: #777;
+    }
+
+    .no-results {
+      padding: 24px 16px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #999;
+      font-style: italic;
+    }
+
+    /* Map */
+    #fuel-map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Loading overlay */
+    .loading {
+      position: absolute;
+      inset: 0;
+      background: rgba(31,31,95,0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: Georgia, serif;
+      z-index: 1000;
+      gap: 12px;
+    }
+
+    .loading-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--orange);
+      display: inline-block;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; background: white; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; background: var(--pink); }
+
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .loading-dots { display: flex; gap: 8px; }
+    .loading-text { font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8; }
+
+    /* Leaflet popup */
+    .leaflet-popup-content-wrapper {
+      border-radius: 4px;
+      border-top: 3px solid var(--orange);
+      font-family: Georgia, serif;
+    }
+
+    .popup-name { font-weight: bold; color: var(--navy); font-size: 0.9rem; text-transform: uppercase; }
+    .popup-owner { color: var(--orange); font-style: italic; font-size: 0.82rem; margin: 2px 0; }
+    .popup-address { color: #555; font-size: 0.8rem; }
+    .popup-status { display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; background: #e8f5e9; color: #2e7d32; }
+
+    .map-container {
+      position: relative;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <header class="header">
+    <div class="header-title">Northern Territory &mdash; <span>Fuel Stations</span></div>
+    <div class="header-count" id="header-count">Loading…</div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search by name, suburb or owner…" />
+    </div>
+    <div class="suburb-dropdown">
+      <select id="suburb-select">
+        <option value="ALL">All Suburbs</option>
+      </select>
+    </div>
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-btn active" data-owner="ALL">All</button>
+    </div>
+    <div class="station-list" id="station-list"></div>
+  </aside>
+
+  <div class="map-container">
+    <div class="loading" id="loading">
+      <div class="loading-dots">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+      </div>
+      <div class="loading-text">Loading fuel stations…</div>
+    </div>
+    <div id="fuel-map"></div>
+  </div>
+
+</div>
+
+<script>
+function initMap() {
+
+  var API_URL =
+    'https://services.ga.gov.au/gis/rest/services/Liquid_Fuel_Facilities/MapServer/3/query' +
+    '?f=json&where=(station_state%20IN%20(%27NT%27))&outFields=*&resultRecordCount=1000';
+
+  var map = L.map('fuel-map').setView([-19.5, 133.0], 6);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a> | © Geoscience Australia 2022',
+    maxZoom: 18,
+  }).addTo(map);
+
+  var allStations = [];
+  var markers = {};
+  var activeOwner = 'ALL';
+  var activeSuburb = 'ALL';
+  var searchQuery = '';
+  var activeItem = null;
+
+  function buildMarkerIcon(owner) {
+    var colors = {
+      'BP': '#007a33',
+      'SHELL': '#fbce07',
+      'CALTEX': '#e30613',
+      'AMPOL': '#e30613',
+      'UNITED': '#0057a8',
+      '7-ELEVEN PTY LTD': '#ff6600',
+    };
+    var bg = colors[owner] || '#e66300';
+    return L.divIcon({
+      className: '',
+      html: '<div style="width:12px;height:12px;border-radius:50%;background:' + bg + ';border:2px solid #1f1f5f;box-shadow:0 1px 4px rgba(0,0,0,0.35);"></div>',
+      iconSize: [12, 12],
+      iconAnchor: [6, 6],
+    });
+  }
+
+  function renderList(stations) {
+    var list = document.getElementById('station-list');
+    if (!stations.length) {
+      list.innerHTML = '<div class="no-results">No stations found.</div>';
+      return;
+    }
+    list.innerHTML = stations.map(function (s, i) {
+      var a = s.attributes;
+      var addr = [a.station_address, a.station_suburb, a.station_postcode].filter(Boolean).join(', ');
+      return (
+        '<div class="station-item" data-idx="' + s._idx + '">' +
+          '<div class="station-name">' + (a.station_name || 'Fuel Station') + '</div>' +
+          '<div class="station-owner">' + (a.station_owner || '') + '</div>' +
+          '<div class="station-address">' + addr + '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    list.querySelectorAll('.station-item').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var idx = parseInt(el.getAttribute('data-idx'));
+        selectStation(idx);
+      });
+    });
+  }
+
+  function selectStation(idx) {
+    var station = allStations[idx];
+    if (!station || !station.geometry) return;
+
+    if (activeItem) activeItem.classList.remove('active');
+    var el = document.querySelector('.station-item[data-idx="' + idx + '"]');
+    if (el) {
+      el.classList.add('active');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      activeItem = el;
+    }
+
+    var lat = station.geometry.y;
+    var lng = station.geometry.x;
+    map.setView([lat, lng], 13, { animate: true });
+    if (markers[idx]) markers[idx].openPopup();
+  }
+
+  function filterStations() {
+    return allStations.filter(function (s) {
+      var a = s.attributes;
+      var matchOwner = activeOwner === 'ALL' || a.station_owner === activeOwner;
+      var matchSuburb = activeSuburb === 'ALL' || a.station_suburb === activeSuburb;
+      var q = searchQuery.toLowerCase();
+      var matchSearch = !q ||
+        (a.station_name || '').toLowerCase().includes(q) ||
+        (a.station_suburb || '').toLowerCase().includes(q) ||
+        (a.station_owner || '').toLowerCase().includes(q);
+      return matchOwner && matchSuburb && matchSearch;
+    });
+  }
+
+  function applyFilters() {
+    var filtered = filterStations();
+
+    // Show/hide markers
+    allStations.forEach(function (s) {
+      if (markers[s._idx]) map.removeLayer(markers[s._idx]);
+    });
+    filtered.forEach(function (s) {
+      if (markers[s._idx]) markers[s._idx].addTo(map);
+    });
+
+    renderList(filtered);
+    document.getElementById('header-count').textContent = filtered.length + ' stations';
+  }
+
+  function buildFilters(stations) {
+    // Suburb dropdown
+    var suburbs = [...new Set(stations.map(function (s) { return s.attributes.station_suburb; }).filter(Boolean))].sort();
+    var select = document.getElementById('suburb-select');
+    suburbs.forEach(function (suburb) {
+      var opt = document.createElement('option');
+      opt.value = suburb;
+      opt.textContent = suburb;
+      select.appendChild(opt);
+    });
+
+    select.addEventListener('change', function () {
+      activeSuburb = select.value;
+      applyFilters();
+    });
+
+    // Owner filter buttons
+    var owners = [...new Set(stations.map(function (s) { return s.attributes.station_owner; }).filter(Boolean))].sort();
+    var bar = document.getElementById('filter-bar');
+    owners.forEach(function (owner) {
+      var btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.setAttribute('data-owner', owner);
+      btn.textContent = owner.replace(' PTY LTD', '');
+      bar.appendChild(btn);
+    });
+
+    bar.addEventListener('click', function (e) {
+      var btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      bar.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeOwner = btn.getAttribute('data-owner');
+      applyFilters();
+    });
+  }
+
+  document.getElementById('search-input').addEventListener('input', function (e) {
+    searchQuery = e.target.value;
+    applyFilters();
+  });
+
+  fetch(API_URL)
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      document.getElementById('loading').style.display = 'none';
+
+      allStations = (data.features || []).map(function (f, i) {
+        f._idx = i;
+        return f;
+      });
+
+      allStations.forEach(function (s) {
+        if (!s.geometry) return;
+        var a = s.attributes;
+        var lat = s.geometry.y;
+        var lng = s.geometry.x;
+        var name = a.station_name || 'Fuel Station';
+        var owner = a.station_owner || '';
+        var addr = [a.station_address, a.station_suburb, a.station_postcode].filter(Boolean).join(', ');
+        var status = a.operational_status || '';
+
+        var marker = L.marker([lat, lng], { icon: buildMarkerIcon(owner) });
+        marker.bindPopup(
+          '<div class="popup-name">' + name + '</div>' +
+          (owner ? '<div class="popup-owner">' + owner + '</div>' : '') +
+          '<div class="popup-address">' + addr + '</div>' +
+          (status ? '<span class="popup-status">' + status + '</span>' : ''),
+          { maxWidth: 260 }
+        );
+        marker.addTo(map);
+        markers[s._idx] = marker;
+      });
+
+      buildFilters(allStations);
+      applyFilters();
+    })
+    .catch(function (err) {
+      document.getElementById('loading').innerHTML = '<div class="loading-text" style="color:#ff6b6b">Failed to load stations</div>';
+      console.error(err);
+    });
+
+}
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onload="initMap()"></script>
+</body>
+</html>
