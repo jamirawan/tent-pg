@@ -1,0 +1,51 @@
+:root{
+  --navy: #1f1f5f;
+  --navy-deep: #14143f;
+  --ochre: #b5451b;
+  --orange: #e66300;
+  --sand: #f3ead8;
+  --sand-light: #faf6ec;
+  --ink: #1a1730;
+  --cream-text: #f6efe0;
+  --line: rgba(26,23,48,0.12);
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html{ scroll-behavior:smooth; }
+
+body{
+  font-family:'Work Sans', sans-serif;
+  background:var(--sand-light);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+
+h1,h2,h3, .display{
+  font-family:'DM Sans', sans-serif;
+}
+
+a{ color:inherit; text-decoration:none; }
+
+img{ max-width:100%; display:block; }
+
+/* ---------- Skip link ---------- */
+.skip-link{
+  position:absolute; left:-999px; top:0;
+  background:var(--orange); color:#fff; padding:.75rem 1.25rem;
+  z-index:200; font-weight:600;
+}
+.skip-link:focus{ left:1rem; top:1rem; }
+
+/* shared "eyebrow" label used across sections */
+.story-label{
+  font-family:'JetBrains Mono', monospace;
+  font-size:.78rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ochre); font-weight:700;
+  display:flex; align-items:center; gap:.6rem;
+}
+.story-label::before{
+  content:''; width:24px; height:1px; background:var(--ochre);
+}
+
+.field-hint{ font-size:.8rem; color:#9691ac; }

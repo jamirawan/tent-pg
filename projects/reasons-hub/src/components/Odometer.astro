@@ -1,0 +1,164 @@
+---
+export interface Props {
+  value: string;      // numeric string, max 3 digits used
+  label: string;
+  id?: string;
+  class?: string;
+}
+
+const { value, label, id = 'odometer', class: className = '' } = Astro.props;
+const safeValue = value.slice(0, 3);
+---
+
+<div class={`hero-counter ${className}`}>
+  <div class="counter-label">{label}</div>
+  <div
+    class="odometer"
+    id={id}
+    data-value={safeValue}
+    aria-label={`${safeValue} ${label}`}
+  >
+    <!-- digit boxes generated client-side -->
+  </div>
+</div>
+
+<style>
+  .counter-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(255,255,255,0.55); margin-bottom:.9rem;
+  }
+  .odometer{
+    display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+  }
+  .odometer :global(.odometer-digit){
+    --digit-h: 5.6rem;
+    width:20vw; height:var(--digit-h);
+    overflow:hidden;
+    position:relative;
+    background:#ffffff;
+    box-shadow:
+      inset 0 1px 2px rgba(0,0,0,0.08),
+      0 6px 16px rgba(0,0,0,0.28);
+  }
+  .odometer :global(.odometer-digit::after){
+    content:'';
+    position:absolute; left:0; right:0; top:50%;
+    height:1px; background:rgba(0,0,0,0.12);
+    transform:translateY(-.5px);
+    z-index:2;
+  }
+  .odometer :global(.digit-strip){
+    display:flex; flex-direction:column;
+    transform:translateY(0);
+    transition:transform 2.1s cubic-bezier(.2,.85,.25,1);
+  }
+  .odometer :global(.digit-strip span){
+    height:var(--digit-h);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700; font-size:2.6rem;
+    color:var(--ink);
+  }
+  .odometer :global(.odometer-comma){
+    color:rgba(255,255,255,0.55);
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700; font-size:2.4rem;
+    align-self:flex-end; margin:0 -.05rem .4rem;
+  }
+  @media (max-width: 560px){
+    .odometer :global(.odometer-digit){ --digit-h: 3.8rem; width:2.6rem; }
+    .odometer :global(.digit-strip span){ font-size:1.8rem; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .odometer :global(.digit-strip){ transition:none; }
+  }
+</style>
+
+<script>
+  // Builds and animates every .odometer on the page (petrol-pump style rolling digits).
+  // Runs once on client load; safe to include multiple Odometer instances per page.
+  function initOdometer(el: HTMLElement) {
+    if (el.dataset.initialized === 'true') return;
+    el.dataset.initialized = 'true';
+
+    const value = (el.getAttribute('data-value') || '0').slice(0, 3);
+    const groups: string[] = [];
+    let remaining = value;
+    while (remaining.length > 3) {
+      groups.unshift(remaining.slice(-3));
+      remaining = remaining.slice(0, -3);
+    }
+    groups.unshift(remaining);
+
+    const CYCLES = 2;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    groups.forEach((group, gi) => {
+      group.split('').forEach((ch) => {
+        const box = document.createElement('div');
+        box.className = 'odometer-digit';
+
+        const strip = document.createElement('div');
+        strip.className = 'digit-strip';
+
+        const total = (CYCLES + 1) * 10;
+        for (let i = 0; i < total; i++) {
+          const span = document.createElement('span');
+          span.textContent = String(i % 10);
+          strip.appendChild(span);
+        }
+
+        box.appendChild(strip);
+        el.appendChild(box);
+
+        const target = CYCLES * 10 + parseInt(ch, 10);
+        strip.style.transform = 'translateY(0)';
+        strip.dataset.target = String(target);
+      });
+
+      if (gi < groups.length - 1) {
+        const comma = document.createElement('span');
+        comma.className = 'odometer-comma';
+        comma.textContent = ',';
+        el.appendChild(comma);
+      }
+    });
+
+    function roll() {
+      const strips = el.querySelectorAll<HTMLElement>('.digit-strip');
+      strips.forEach((strip, i) => {
+        const target = parseInt(strip.dataset.target || '0', 10);
+        const box = strip.parentElement as HTMLElement;
+        const h = box.getBoundingClientRect().height;
+        if (reduceMotion) {
+          strip.style.transition = 'none';
+        } else {
+          strip.style.transitionDelay = i * 0.06 + 's';
+        }
+        strip.style.transform = 'translateY(-' + target * h + 'px)';
+      });
+    }
+
+    if (reduceMotion) {
+      roll();
+    } else if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              roll();
+              observer.disconnect();
+            }
+          });
+        },
+        { threshold: 0.4 }
+      );
+      observer.observe(el);
+    } else {
+      setTimeout(roll, 400);
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>('.odometer').forEach(initOdometer);
+</script>

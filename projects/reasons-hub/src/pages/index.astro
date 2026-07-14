@@ -1,0 +1,90 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import StorySection from '../components/StorySection.astro';
+import SecondBanner from '../components/SecondBanner.astro';
+import SubmitStoryForm from '../components/SubmitStoryForm.astro';
+import Footer from '../components/Footer.astro';
+
+const territoryDifference = [
+  { num: '01', text: "Distances here run to hours, not minutes. Between towns you'll pass road trains, roadhouses, and more stars than you've ever seen." },
+  { num: '02', text: 'Traditional Owners have cared for this land for over 65,000 years, the oldest continuous living culture on Earth.' },
+  { num: '03', text: 'Two seasons run the show: the Dry, from May to October, all blue sky, dust, and firelight evenings.' },
+  { num: '04', text: 'The Wet arrives November to April, when waterfalls roar back to life and the landscape turns green almost overnight.' },
+  { num: '05', text: 'Uluru changes colour through the day, from ochre at dawn to deep red at sunset, best watched in silence.' },
+  { num: '06', text: 'Kakadu spans nearly 20,000 square kilometres, home to ancient rock art, saltwater crocodiles, and wetlands thick with birdlife.' },
+  { num: '07', text: "Kings Canyon's rim walk climbs steep sandstone early morning, rewarding hikers with views across an ancient, cracked plateau." },
+  { num: '08', text: "Litchfield's plunge pools sit close enough to Darwin for a day trip, yet feel worlds from the city." },
+  { num: '09', text: 'Nitmiluk Gorge is best explored by canoe at first light, when the water is still and the walls glow.' },
+  { num: '10', text: "Darwin's Mindil Beach markets run dry-season evenings, mixing food stalls, live music, and one of the world's best sunsets." },
+  { num: '11', text: "Alice Springs sits almost exactly at the continent's centre, a desert town ringed by the ancient MacDonnell Ranges." },
+  { num: '12', text: 'Aboriginal-guided tours turn a landscape into a living story, sharing knowledge passed down for thousands of generations.' },
+  { num: '13', text: "The Tanami and Sandover are proper outback tracks, best driven with fuel, water, and a plan you've shared with someone." },
+  { num: '14', text: "Barramundi fishing draws anglers to the Territory's rivers and coastlines, chasing one of Australia's most prized sportfish." },
+  { num: '15', text: 'Night skies here are some of the darkest on Earth, with the Milky Way visible without any effort at all.' },
+  { num: '16', text: 'Termite mounds can stand taller than a person, some aligned north-south to regulate temperature through the desert heat.' },
+  { num: '17', text: 'The Ghan train crosses the Territory north to south, three days of red desert, tropical wetland, and everything between.' },
+  { num: '18', text: 'Bushfood and native ingredients, from wattleseed to Kakadu plum, are increasingly showcased on menus across Darwin and Alice Springs.' },
+  { num: '19', text: 'Crocodile spotting cruises on the Adelaide River are famous for saltwater crocodiles launching clear out of the water.' },
+  { num: '20', text: 'Whichever season you land in, the Territory rewards slowness: one long drive, one sunset, one gorge at a time.' },
+];
+
+const beforeYouGo = [
+  { num: '01', text: "Fly into Darwin or Alice Springs, then decide whether you're chasing the Top End or the Red Centre." },
+  { num: '02', text: "Hire a car with decent clearance if you're leaving sealed roads, even for short detours off the highway." },
+  { num: '03', text: 'Book Uluru sunrise or sunset viewing spots ahead in peak season, as the best pull-offs fill up fast.' },
+  { num: '04', text: 'Carry more water than feels necessary, especially on any walk longer than an hour in the heat.' },
+  { num: '05', text: 'Mobile signal drops out fast beyond towns, so download offline maps before you leave the last service station.' },
+  { num: '06', text: "Fuel stops can be 200 kilometres apart, so fill up whenever the tank passes half, not when it's empty." },
+  { num: '07', text: 'The Dry season, May to October, is the easiest time to visit, with mild days and almost no rain.' },
+  { num: '08', text: 'Wet season travel rewards flexibility, since some roads and gorges close after heavy rain without much warning.' },
+  { num: '09', text: "Swimming isn't always safe up north, so check current advice on crocodiles before you jump into any water." },
+  { num: '10', text: 'Pack layers even in the Dry, since desert nights drop close to freezing while days stay warm.' },
+  { num: '11', text: 'National park permits are required for some Aboriginal land, so check access rules before you plan a route.' },
+  { num: '12', text: 'A minimum of five days lets you properly cover either the Red Centre or Kakadu, not both at once.' },
+  { num: '13', text: "Book Aboriginal-guided tours early, they offer context and stories a self-guided visit simply can't provide." },
+  { num: '14', text: "Sunscreen and a wide-brim hat matter more here than almost anywhere else you've likely travelled." },
+  { num: '15', text: 'Accommodation ranges from outback stations to eco-camps, so book ahead in small towns during peak months.' },
+  { num: '16', text: "The Ghan and long-distance coaches are relaxed alternatives to driving if you'd rather watch the country pass by." },
+  { num: '17', text: 'Respect signage around sacred sites, some areas are closed to photography or climbing out of cultural respect.' },
+  { num: '18', text: 'Flies are relentless in the Dry, a simple head net makes walks noticeably more enjoyable.' },
+  { num: '19', text: 'Cash still works better than cards at remote roadhouses, where card readers and signal can be unreliable.' },
+  { num: '20', text: 'Tell someone your route and return time before any remote drive, and check in when you arrive.' },
+];
+---
+
+<Layout>
+  <Header />
+
+  <main id="main">
+    <Hero />
+
+    <StorySection
+      id="story"
+      eyebrow="The Territory difference"
+      heading="It isn't empty. It's uncrowded."
+      hint="Scroll for 20 things to know"
+      items={territoryDifference}
+    />
+
+    <SecondBanner
+      eyebrow="Ready when you are"
+      heading="Your Territory story starts with one road."
+      body="Build an itinerary around the places that matter to you — from red dirt to rainforest, in as few or as many days as you've got."
+      ctaLabel="Build my itinerary"
+    />
+
+    <StorySection
+      id="story2"
+      eyebrow="Before you go"
+      heading="20 things worth knowing first."
+      hint="Scroll for trip-planning basics"
+      items={beforeYouGo}
+    />
+
+    <SubmitStoryForm />
+  </main>
+
+  <Footer />
+</Layout>

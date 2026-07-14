@@ -1,0 +1,147 @@
+---
+// Placeholder form — wire `action` up to your form handler / Storyblok / API route.
+---
+
+<section class="submit-story" id="submit-story">
+  <div class="submit-story-inner">
+    <div class="submit-story-head">
+      <span class="story-label" style="justify-content:center;">Share your trip</span>
+      <h2>Got a Territory story worth telling?</h2>
+      <p>Send us your photos and a few lines about your trip — we feature traveller stories across our site and socials.</p>
+    </div>
+
+    <form class="story-form" action="#" method="post">
+      <div class="form-row">
+        <div class="form-field">
+          <label for="story-name">Full name</label>
+          <input type="text" id="story-name" name="name" placeholder="Jane Smith" required />
+        </div>
+        <div class="form-field">
+          <label for="story-email">Email</label>
+          <input type="email" id="story-email" name="email" placeholder="jane@email.com" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="story-location">Where did you go?</label>
+          <input type="text" id="story-location" name="location" placeholder="e.g. Uluru, Kakadu, Darwin" />
+        </div>
+        <div class="form-field">
+          <label for="story-when">When did you visit?</label>
+          <select id="story-when" name="when">
+            <option value="">Select a season</option>
+            <option value="dry">Dry season (May–Oct)</option>
+            <option value="wet">Wet season (Nov–Apr)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="story-text">Your story</label>
+        <textarea id="story-text" name="story" placeholder="Tell us what made your trip memorable..." required></textarea>
+        <span class="field-hint">A few sentences is plenty — we'll reach out if we'd like more.</span>
+      </div>
+
+      <div class="form-field">
+        <label for="story-photo">Photos (optional)</label>
+        <label class="form-file" for="story-photo">
+          Click to upload, or drag photos here
+          <input type="file" id="story-photo" name="photo" accept="image/*" multiple style="display:none;" />
+        </label>
+      </div>
+
+      <div class="form-submit">
+        <span class="field-hint">By submitting, you agree we may feature your story.</span>
+        <button type="submit" class="btn-submit">Submit my story</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<style>
+  .submit-story{
+    background:var(--sand);
+    padding:6rem 1.5rem;
+  }
+  .submit-story-inner{
+    max-width:720px; margin:0 auto;
+  }
+  .submit-story-head{ text-align:center; margin-bottom:2.8rem; }
+  .submit-story-head h2{
+    font-size:clamp(1.9rem, 3.4vw, 2.6rem);
+    font-weight:900; color:var(--navy-deep);
+    line-height:1.1; letter-spacing:-.01em;
+    margin-top:1rem;
+  }
+  .submit-story-head p{
+    color:#5c5678; font-size:1.05rem;
+    max-width:44ch; margin:.9rem auto 0; line-height:1.55;
+  }
+
+  .story-form{
+    background:#fff;
+    border-radius:16px;
+    padding:2.4rem;
+    box-shadow:0 20px 45px rgba(31,31,95,0.08);
+    display:grid; gap:1.4rem;
+  }
+  .form-row{ display:grid; gap:1.4rem; grid-template-columns:1fr 1fr; }
+  .form-field{ display:flex; flex-direction:column; gap:.5rem; }
+  .form-field label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+    color:#6f6a8c; font-weight:600;
+  }
+  .form-field input,
+  .form-field textarea,
+  .form-field select{
+    font-family:'Work Sans', sans-serif;
+    font-size:1rem; color:var(--ink);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:.85rem 1rem;
+    background:var(--sand-light);
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .form-field input:focus,
+  .form-field textarea:focus,
+  .form-field select:focus{
+    outline:none;
+    border-color:var(--ochre);
+    background:#fff;
+  }
+  .form-field textarea{ resize:vertical; min-height:140px; line-height:1.5; }
+
+  .form-file{
+    border:1.5px dashed var(--line);
+    border-radius:10px;
+    padding:1.6rem;
+    text-align:center;
+    color:#6f6a8c; font-size:.9rem;
+    background:var(--sand-light);
+    cursor:pointer;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .form-file:hover{ border-color:var(--ochre); background:#fff; }
+
+  .form-submit{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:1rem; flex-wrap:wrap;
+    margin-top:.4rem;
+  }
+  .form-submit .field-hint{ margin:0; }
+  .btn-submit{
+    background:var(--orange); color:#fff;
+    border:0; cursor:pointer;
+    padding:.95rem 2.1rem; border-radius:999px;
+    font-weight:700; font-size:.95rem;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .btn-submit:hover{ background:#ff7410; transform:translateY(-1px); }
+
+  @media (max-width:640px){
+    .form-row{ grid-template-columns:1fr; }
+    .story-form{ padding:1.6rem; }
+  }
+</style>
