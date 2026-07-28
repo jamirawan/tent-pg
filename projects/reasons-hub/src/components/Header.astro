@@ -1,92 +1,30 @@
 ---
-const navItems = [
-  { label: 'Destinations', href: '#' },
-  { label: 'Things to Do', href: '#' },
-  { label: 'Itineraries', href: '#' },
-  { label: 'Getting Here', href: '#' },
-];
+interface Props {
+  title?: string;
+}
+
+const { title = 'Northern Territory' } = Astro.props;
 ---
 
 <header>
-  <div class="header-inner">
-    <a href="#" class="logo" aria-label="Northern Territory home">
-      <span class="logo-mark" aria-hidden="true"></span>
-      <span>
-        NORTHERN TERRITORY
-        <span class="sub">Australia's Outback</span>
-      </span>
-    </a>
-    <nav class="menu" aria-label="Primary">
-      <ul>
-        {navItems.map((item) => (
-          <li><a href={item.href}>{item.label}</a></li>
-        ))}
-      </ul>
-      <a href="#" class="btn-plan">Plan a trip</a>
-    </nav>
-    <button class="menu-toggle" aria-label="Open menu">☰</button>
-  </div>
+  <nav class="navbar">
+    <a class="navbar__logo" href="#">
+  <img 
+      src="https://www.tourismandeventsnt.com.au/themes/custom/tourism_eventsnt/dist/img/tourismnt-logo-blue.svg"    alt="Tourism and Events NT" 
+    class="navbar__logo-img"
+  />
+</a>
+    <input id="nav-toggle" class="nav-toggle-checkbox" type="checkbox" aria-label="Toggle navigation" />
+    <label for="nav-toggle" class="nav-toggle" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+    <ul class="navbar__nav">
+      <li><a href="#">Places to go</a></li>
+      <li><a href="#">Things to do</a></li>
+      <li><a href="#">Plan your trip</a></li>
+      <li><a href="#" class="navbar__cta">Plan trip</a></li>
+    </ul>
+  </nav>
 </header>
-
-<style>
-  header{
-    position:sticky; top:0; z-index:100;
-    background:var(--navy);
-    border-bottom:1px solid rgba(255,255,255,0.08);
-  }
-  .header-inner{
-    max-width:1280px; margin:0 auto;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:1.1rem 1.5rem;
-  }
-  .logo{
-    display:flex; align-items:center; gap:.6rem;
-    font-family:'DM Sans', sans-serif;
-    font-weight:900; font-size:1.15rem; letter-spacing:.02em;
-    color:var(--cream-text);
-  }
-  .logo-mark{
-    width:34px; height:34px; border-radius:50%;
-    background:conic-gradient(from 220deg, var(--ochre), var(--orange), #f2b45c, var(--ochre));
-    flex-shrink:0;
-  }
-  .logo span.sub{
-    display:block; font-family:'Work Sans', sans-serif;
-    font-weight:400; font-size:.6rem; letter-spacing:.18em;
-    color:rgba(246,239,224,0.6); text-transform:uppercase; margin-top:2px;
-  }
-
-  nav.menu{ display:flex; align-items:center; gap:2.2rem; }
-  nav.menu ul{ list-style:none; display:flex; gap:2.2rem; }
-  nav.menu a{
-    color:var(--cream-text); font-size:.92rem; font-weight:500;
-    position:relative; padding:.35rem 0;
-    transition:color .2s ease;
-  }
-  nav.menu a::after{
-    content:''; position:absolute; left:0; bottom:0;
-    width:0; height:2px; background:var(--orange);
-    transition:width .25s ease;
-  }
-  nav.menu a:hover{ color:#fff; }
-  nav.menu a:hover::after{ width:100%; }
-
-  .btn-plan{
-    background:var(--orange); color:#fff !important;
-    padding:.65rem 1.3rem; border-radius:999px;
-    font-size:.88rem; font-weight:600;
-    transition:background .2s ease, transform .2s ease;
-  }
-  .btn-plan:hover{ background:#ff7410; transform:translateY(-1px); }
-
-  .menu-toggle{
-    display:none; background:none; border:0; color:var(--cream-text);
-    font-size:1.5rem; cursor:pointer;
-  }
-
-  @media (max-width: 900px){
-    nav.menu ul{ display:none; }
-    .menu-toggle{ display:block; }
-    .btn-plan{ display:none; }
-  }
-</style>

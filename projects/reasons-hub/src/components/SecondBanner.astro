@@ -26,14 +26,14 @@ const { eyebrow, heading, body, ctaLabel, ctaHref = '#' } = Astro.props;
     display:flex; flex-direction:column; align-items:center;
     padding:5.5rem 1.5rem 0;
     overflow:hidden;
-    background:linear-gradient(180deg, var(--navy-deep) 0%, #3a2145 45%, var(--ochre) 100%);
+    background:
+      linear-gradient(180deg, rgba(17, 24, 39, 0.68) 0%, rgba(17, 24, 39, 0.42) 45%, rgba(17, 24, 39, 0.72) 100%),
+      url('https://img2.storyblok.com/f/286255898790625/fce3224269/20250814tntbestkeptseason-advancededit-1.jpg') center/cover no-repeat;
   }
   .banner-top::after{
     content:'';
     position:absolute; left:0; right:0; bottom:0; height:45%;
-    background:
-      linear-gradient(180deg, transparent, rgba(20,20,63,0.5)),
-      repeating-linear-gradient(95deg, rgba(255,255,255,0.05) 0 3px, transparent 3px 70px);
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,0.4));
   }
   .banner-top-content{
     position:relative; z-index:2;
