@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-body: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --font-display: 'Sora', 'Trebuchet MS', sans-serif;
+  --bg: #f4f0e6;
+  --bg-accent: #fef4e8;
+  --panel: rgba(255, 255, 255, 0.85);
+  --panel-strong: rgba(255, 255, 255, 0.92);
+  --border: rgba(15, 23, 42, 0.12);
+  --border-strong: rgba(15, 23, 42, 0.2);
+  --ink-strong: #1f2937;
+  --ink-soft: #5f6c7b;
+  --accent: #c65f2b;
+  --accent-2: #2f6f6d;
+  --shadow-soft: 0 12px 30px rgba(31, 41, 55, 0.08);
+
+  font-family: var(--font-body);
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ink-strong);
+  background-color: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(255, 245, 226, 0.9), transparent 55%),
+    radial-gradient(circle at top right, rgba(223, 236, 232, 0.9), transparent 50%),
+    linear-gradient(135deg, var(--bg), var(--bg-accent));
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+button {
+  border: none;
+  background: none;
+}
+
+::selection {
+  background: rgba(198, 95, 43, 0.2);
+}
